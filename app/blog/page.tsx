@@ -72,7 +72,7 @@ export default function BlogPage() {
                 <span>May 15, 2025</span>
                 <span className="mx-2">•</span>
                 <User className="h-4 w-4" />
-                <span>Sarah Hamduk</span>
+                <span>Amisu Omotayo Hikmot</span>
                 <span className="mx-2">•</span>
                 <Clock className="h-4 w-4" />
                 <span>8 min read</span>

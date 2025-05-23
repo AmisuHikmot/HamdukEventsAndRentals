@@ -161,10 +161,10 @@ export default function GalleryPage() {
           <div className="max-w-3xl mx-auto">
             <blockquote className="text-center">
               <p className="text-xl italic mb-4">
-                "Hamduk Events transformed our wedding into an absolute dream. Every detail was perfect, from the
+                "Hamduk Events transformed our Gradution into an absolute dream. Every detail was perfect, from the
                 stunning decor to the seamless coordination. Our guests are still talking about it months later!"
               </p>
-              <footer className="font-medium">— Jennifer & Michael, Wedding Clients</footer>
+              <footer className="font-medium">— AbdulSemiu & AbdulSelim, Wedding Clients</footer>
             </blockquote>
           </div>
         </div>

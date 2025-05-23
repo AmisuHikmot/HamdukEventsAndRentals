@@ -153,7 +153,7 @@ const additionalItems = [
     id: 20,
     image: "/placeholder.svg?height=300&width=400",
     title: "Tent (20' x 20')",
-    price: 300,
+    price: 40,000,
     category: "Equipment",
   },
 ]

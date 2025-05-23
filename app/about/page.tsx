@@ -41,12 +41,12 @@ export default function AboutPage() {
                 planning and rental company serving the entire region.
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                Our founder, Sarah Hamduk, started the company after planning her own wedding and realizing there was a
+                Our founder, Amisu Omotayo Hikmot, started the company after planning the first ever NASFAT Finance Committe get-together and realizing there was a
                 need for a comprehensive event service that could handle both planning and equipment rentals under one
                 roof.
               </p>
               <p className="text-gray-500 dark:text-gray-400">
-                Today, our team of experienced event professionals continues to uphold Sarah's vision of providing
+                Today, our team of experienced event professionals continues to uphold Omotayo's vision of providing
                 personalized service, attention to detail, and high-quality equipment for events of all sizes.
               </p>
             </div>
@@ -140,48 +140,48 @@ export default function AboutPage() {
               <div className="relative w-40 h-40 mx-auto mb-4">
                 <Image
                   src="/placeholder.svg?height=160&width=160"
-                  alt="Sarah Hamduk"
+                  alt="Amisu Omotayo Hikmot"
                   fill
                   className="object-cover rounded-full"
                 />
               </div>
-              <h3 className="text-xl font-bold">Sarah Hamduk</h3>
+              <h3 className="text-xl font-bold">Amisu Omotayo Hikmot</h3>
               <p className="text-rose-600">Founder & CEO</p>
             </div>
             <div className="text-center">
               <div className="relative w-40 h-40 mx-auto mb-4">
                 <Image
                   src="/placeholder.svg?height=160&width=160"
-                  alt="Michael Johnson"
+                  alt="Kate Okafor Iloba-Nweze"
                   fill
                   className="object-cover rounded-full"
                 />
               </div>
-              <h3 className="text-xl font-bold">Michael Johnson</h3>
+              <h3 className="text-xl font-bold">Kate Okafor Iloba-Nweze</h3>
               <p className="text-rose-600">Event Director</p>
             </div>
             <div className="text-center">
               <div className="relative w-40 h-40 mx-auto mb-4">
                 <Image
                   src="/placeholder.svg?height=160&width=160"
-                  alt="Jessica Chen"
+                  alt="Idowu Towogbe"
                   fill
                   className="object-cover rounded-full"
                 />
               </div>
-              <h3 className="text-xl font-bold">Jessica Chen</h3>
+              <h3 className="text-xl font-bold">Idowu Towogbe</h3>
               <p className="text-rose-600">Rental Manager</p>
             </div>
             <div className="text-center">
               <div className="relative w-40 h-40 mx-auto mb-4">
                 <Image
                   src="/placeholder.svg?height=160&width=160"
-                  alt="David Williams"
+                  alt="Alhaja Disu"
                   fill
                   className="object-cover rounded-full"
                 />
               </div>
-              <h3 className="text-xl font-bold">David Williams</h3>
+              <h3 className="text-xl font-bold">Alhaja Disu</h3>
               <p className="text-rose-600">Design Specialist</p>
             </div>
           </div>

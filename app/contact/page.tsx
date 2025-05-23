@@ -141,7 +141,7 @@ export default function ContactPage() {
                     <Phone className="h-6 w-6 text-rose-600 mt-0.5" />
                     <div>
                       <h3 className="font-semibold text-lg">Phone</h3>
-                      <p className="text-muted-foreground">(555) 123-4567</p>
+                      <p className="text-muted-foreground">+234 818 596 8179</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -150,7 +150,7 @@ export default function ContactPage() {
                     <Mail className="h-6 w-6 text-rose-600 mt-0.5" />
                     <div>
                       <h3 className="font-semibold text-lg">Email</h3>
-                      <p className="text-muted-foreground">info@hamdukevents.com</p>
+                      <p className="text-muted-foreground">hamdukuniqueconcept@gmail.com</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -159,7 +159,7 @@ export default function ContactPage() {
                     <MapPin className="h-6 w-6 text-rose-600 mt-0.5" />
                     <div>
                       <h3 className="font-semibold text-lg">Address</h3>
-                      <p className="text-muted-foreground">123 Event St, City, State 12345</p>
+                      <p className="text-muted-foreground">No. 4 Dipeolu Street, Ikeja, Lagos, Nigeria</p>
                     </div>
                   </CardContent>
                 </Card>

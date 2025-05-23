@@ -25,7 +25,7 @@ export default function BlogPostPage() {
                 <span>May 15, 2025</span>
                 <span className="mx-2">•</span>
                 <User className="h-4 w-4" />
-                <span>Sarah Hamduk</span>
+                <span>Amisu Omotayo Hikmot</span>
                 <span className="mx-2">•</span>
                 <Clock className="h-4 w-4" />
                 <span>8 min read</span>
@@ -187,13 +187,13 @@ export default function BlogPostPage() {
                   <div className="relative w-16 h-16 rounded-full overflow-hidden">
                     <Image
                       src="/placeholder.svg?height=100&width=100"
-                      alt="Sarah Hamduk"
+                      alt="Amisu Omotayo Hikmot"
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold">Sarah Hamduk</h3>
+                    <h3 className="font-bold">Amisu Omotayo Hikmot</h3>
                     <p className="text-sm text-muted-foreground">
                       Founder & CEO of Hamduk Events and Rentals with over 15 years of experience in event planning.
                     </p>

@@ -52,7 +52,7 @@ export default function CateringPage() {
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold">Our Catering Coordination Services</h2>
             <p className="max-w-[700px] mx-auto mt-2 text-gray-500 dark:text-gray-400">
-              We work with top local caterers to provide exceptional food and beverage options for your event.
+              We work with top local and International caterers to provide exceptional food and beverage options for your event.
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -206,7 +206,7 @@ export default function CateringPage() {
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold">Our Featured Catering Partners</h2>
             <p className="max-w-[700px] mx-auto mt-2 text-gray-500 dark:text-gray-400">
-              We work with the finest caterers in the area to provide exceptional culinary experiences.
+              We work with the finest caterers in the world to provide exceptional culinary experiences.
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">

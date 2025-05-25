@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div className="grid gap-10 md:grid-cols-2 items-center">
             <div className="relative aspect-square">
               <Image
-                src="/placeholder.svg?height=600&width=600"
+                src="/team.png?height=600&width=600"
                 alt="Hamduk Events team"
                 fill
                 className="object-cover rounded-lg"
@@ -139,7 +139,7 @@ export default function AboutPage() {
             <div className="text-center">
               <div className="relative w-40 h-40 mx-auto mb-4">
                 <Image
-                  src="/placeholder.svg?height=160&width=160"
+                  src="/ceo.jpg?height=160&width=160"
                   alt="Amisu Omotayo Hikmot"
                   fill
                   className="object-cover rounded-full"
@@ -151,7 +151,7 @@ export default function AboutPage() {
             <div className="text-center">
               <div className="relative w-40 h-40 mx-auto mb-4">
                 <Image
-                  src="/placeholder.svg?height=160&width=160"
+                  src="/kate.jpg?height=160&width=160"
                   alt="Kate Okafor Iloba-Nweze"
                   fill
                   className="object-cover rounded-full"

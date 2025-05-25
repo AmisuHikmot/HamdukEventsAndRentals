@@ -164,7 +164,7 @@ export default function GalleryPage() {
                 "Hamduk Events transformed our Gradution into an absolute dream. Every detail was perfect, from the
                 stunning decor to the seamless coordination. Our guests are still talking about it months later!"
               </p>
-              <footer className="font-medium">— AbdulSemiu & AbdulSelim, Wedding Clients</footer>
+              <footer className="font-medium">— AbdulSemiu & AbdulSelim, Graduating Clients</footer>
             </blockquote>
           </div>
         </div>

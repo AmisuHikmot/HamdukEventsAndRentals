@@ -60,7 +60,7 @@ export default function BlogPage() {
           <div className="grid gap-6 lg:grid-cols-2 items-center">
             <div className="relative aspect-video overflow-hidden rounded-lg">
               <Image
-                src="/placeholder.svg?height=720&width=1280"
+                src="/10wedtips.jpeg?height=720&width=1280"
                 alt="10 Essential Tips for Planning Your Dream Wedding"
                 fill
                 className="object-cover"
@@ -102,7 +102,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/coprate.jpeg?height=400&width=600"
                   alt="Corporate Event Trends for 2025"
                   fill
                   className="object-cover"
@@ -130,7 +130,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/manage.png?height=400&width=600"
                   alt="Creative Centerpiece Ideas on a Budget"
                   fill
                   className="object-cover"
@@ -158,7 +158,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/venuesel.jpeg?height=400&width=600"
                   alt="How to Choose the Perfect Venue for Your Event"
                   fill
                   className="object-cover"
@@ -185,7 +185,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/never.jpeg?height=400&width=600"
                   alt="5 Wedding Color Palettes That Never Go Out of Style"
                   fill
                   className="object-cover"
@@ -214,7 +214,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/light.jpeg?height=400&width=600"
                   alt="The Ultimate Guide to Event Lighting"
                   fill
                   className="object-cover"
@@ -243,7 +243,7 @@ export default function BlogPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/memorable.jpeg?height=400&width=600"
                   alt="How to Create a Memorable Corporate Event Experience"
                   fill
                   className="object-cover"

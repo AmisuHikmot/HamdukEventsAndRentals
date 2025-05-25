@@ -108,7 +108,7 @@ export default function ServicesPage() {
             </div>
             <div className="relative h-[300px] overflow-hidden rounded-lg">
               <Image
-                src="/placeholder.svg?height=600&width=800"
+                src="/home_img1.jpeg?height=600&width=800"
                 alt="Event planning session"
                 fill
                 className="object-cover"

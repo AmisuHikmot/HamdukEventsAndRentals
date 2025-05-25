@@ -39,7 +39,7 @@ export default function Home() {
             </div>
             <div className="mx-auto lg:mr-0 relative">
               <Image
-                src="/placeholder.svg?height=550&width=550"
+                src="/home_img1.jpeg?height=550&width=550"
                 alt="Event setup with decorations"
                 width={550}
                 height={550}
@@ -110,19 +110,19 @@ export default function Home() {
           </div>
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8 md:mt-12">
             <RentalItemCard
-              image="/placeholder.svg?height=300&width=400"
+              image="/chiavari_chairsimg.jpg?height=300&width=400"
               title="Chiavari Chairs"
               price={8}
               category="Furniture"
             />
             <RentalItemCard
-              image="/placeholder.svg?height=300&width=400"
+              image="/roundtables_60inchimg.jpg?height=300&width=400"
               title="Round Tables (60&quot;)"
               price={12}
               category="Furniture"
             />
             <RentalItemCard
-              image="/placeholder.svg?height=300&width=400"
+              image="/premium_linensimg.jpeg?height=300&width=400"
               title="Premium Linens"
               price={15}
               category="Decor"
@@ -206,7 +206,7 @@ export default function Home() {
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/home_img1.jpeg?height=400&width=600"
                   alt="Event setup with decorations"
                   width={600}
                   height={400}

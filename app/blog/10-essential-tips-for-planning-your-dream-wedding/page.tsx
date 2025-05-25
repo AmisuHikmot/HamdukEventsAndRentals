@@ -49,7 +49,7 @@ export default function BlogPostPage() {
             <div className="col-span-12 lg:col-span-8 lg:col-start-3">
               <div className="relative aspect-video mb-10 overflow-hidden rounded-lg">
                 <Image
-                  src="/placeholder.svg?height=720&width=1280"
+                  src="/10wedtips.jpeg?height=720&width=1280"
                   alt="Wedding planning"
                   fill
                   className="object-cover"
@@ -186,7 +186,7 @@ export default function BlogPostPage() {
                 <div className="flex items-center gap-4">
                   <div className="relative w-16 h-16 rounded-full overflow-hidden">
                     <Image
-                      src="/placeholder.svg?height=100&width=100"
+                      src="/ceo.jpg?height=100&width=100"
                       alt="Amisu Omotayo Hikmot"
                       fill
                       className="object-cover"
@@ -213,7 +213,7 @@ export default function BlogPostPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/never.jpeg?height=400&width=600"
                   alt="5 Wedding Color Palettes That Never Go Out of Style"
                   fill
                   className="object-cover"
@@ -234,7 +234,7 @@ export default function BlogPostPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/venuesel.jpeg?height=400&width=600"
                   alt="How to Choose the Perfect Venue for Your Event"
                   fill
                   className="object-cover"
@@ -254,7 +254,7 @@ export default function BlogPostPage() {
             <Card className="overflow-hidden">
               <div className="relative aspect-video">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/light.jpeg?height=400&width=600"
                   alt="The Ultimate Guide to Event Lighting"
                   fill
                   className="object-cover"

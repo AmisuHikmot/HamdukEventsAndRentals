@@ -15,6 +15,9 @@ export const createClient = (url?: string, key?: string) => {
   return createSupabaseClient(url || supabaseUrl, key || supabaseAnonKey)
 }
 
+// Default export
+export default supabase
+
 // Database types
 export interface Database {
   public: {

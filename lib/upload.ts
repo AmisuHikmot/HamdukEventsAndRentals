@@ -1,13 +1,13 @@
 import { supabaseAdmin } from "./supabase"
 
-interface UploadOptions {
+export interface UploadOptions {
   bucket: string
-  path: string
-  file: File
+  path?: string
   upsert?: boolean
+  contentType?: string
 }
 
-interface UploadResult {
+export interface UploadResult {
   success: boolean
   data?: {
     path: string
@@ -17,29 +17,28 @@ interface UploadResult {
   error?: string
 }
 
-class FileUploadService {
+export class FileUploadService {
   // Upload file to Supabase Storage
-  async uploadFile({ bucket, path, file, upsert = false }: UploadOptions): Promise<UploadResult> {
+  async uploadFile(file: File, options: UploadOptions): Promise<UploadResult> {
     try {
-      // Validate file
-      const validation = this.validateFile(file)
-      if (!validation.valid) {
-        return { success: false, error: validation.error }
-      }
+      const fileName = `${Date.now()}-${file.name}`
+      const filePath = options.path ? `${options.path}/${fileName}` : fileName
 
-      // Upload to Supabase Storage
-      const { data, error } = await supabaseAdmin.storage.from(bucket).upload(path, file, {
-        upsert,
-        contentType: file.type,
+      const { data, error } = await supabaseAdmin.storage.from(options.bucket).upload(filePath, file, {
+        upsert: options.upsert || false,
+        contentType: options.contentType || file.type,
       })
 
       if (error) {
         console.error("Upload error:", error)
-        return { success: false, error: error.message }
+        return {
+          success: false,
+          error: error.message,
+        }
       }
 
       // Get public URL
-      const { data: publicUrlData } = supabaseAdmin.storage.from(bucket).getPublicUrl(data.path)
+      const { data: publicUrlData } = supabaseAdmin.storage.from(options.bucket).getPublicUrl(data.path)
 
       return {
         success: true,
@@ -51,102 +50,77 @@ class FileUploadService {
       }
     } catch (error) {
       console.error("Upload service error:", error)
-      return { success: false, error: "Upload failed" }
+      return {
+        success: false,
+        error: error.message,
+      }
     }
   }
 
   // Upload multiple files
-  async uploadMultipleFiles(uploads: UploadOptions[]): Promise<UploadResult[]> {
-    const results = await Promise.all(uploads.map((upload) => this.uploadFile(upload)))
-    return results
+  async uploadMultipleFiles(files: File[], options: UploadOptions): Promise<UploadResult[]> {
+    const uploadPromises = files.map((file) => this.uploadFile(file, options))
+    return Promise.all(uploadPromises)
   }
 
-  // Delete file
+  // Delete file from storage
   async deleteFile(bucket: string, path: string): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabaseAdmin.storage.from(bucket).remove([path])
 
       if (error) {
-        return { success: false, error: error.message }
+        return {
+          success: false,
+          error: error.message,
+        }
       }
 
       return { success: true }
     } catch (error) {
-      console.error("Delete error:", error)
-      return { success: false, error: "Delete failed" }
+      return {
+        success: false,
+        error: error.message,
+      }
     }
   }
 
   // Get file URL
-  getPublicUrl(bucket: string, path: string): string {
+  getFileUrl(bucket: string, path: string): string {
     const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(path)
 
     return data.publicUrl
   }
 
   // Validate file
-  validateFile(file: File): { valid: boolean; error?: string } {
-    // Check file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024 // 10MB
+  validateFile(
+    file: File,
+    options: {
+      maxSize?: number // in bytes
+      allowedTypes?: string[]
+    } = {},
+  ): { valid: boolean; error?: string } {
+    const { maxSize = 10 * 1024 * 1024, allowedTypes = [] } = options // Default 10MB
+
     if (file.size > maxSize) {
-      return { valid: false, error: "File size must be less than 10MB" }
+      return {
+        valid: false,
+        error: `File size exceeds ${maxSize / (1024 * 1024)}MB limit`,
+      }
     }
 
-    // Check file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ]
-
-    if (!allowedTypes.includes(file.type)) {
-      return { valid: false, error: "File type not supported" }
+    if (allowedTypes.length > 0 && !allowedTypes.includes(file.type)) {
+      return {
+        valid: false,
+        error: `File type ${file.type} is not allowed`,
+      }
     }
 
     return { valid: true }
   }
-
-  // Generate unique filename
-  generateFileName(originalName: string): string {
-    const timestamp = Date.now()
-    const random = Math.floor(Math.random() * 1000)
-    const extension = originalName.split(".").pop()
-    return `${timestamp}_${random}.${extension}`
-  }
-
-  // Get file info
-  async getFileInfo(bucket: string, path: string) {
-    try {
-      const { data, error } = await supabaseAdmin.storage.from(bucket).list(path)
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      return { success: true, data }
-    } catch (error) {
-      console.error("Get file info error:", error)
-      return { success: false, error: "Failed to get file info" }
-    }
-  }
 }
 
-// Export singleton instance
+// Create and export upload service instance
 export const uploadService = new FileUploadService()
 
-// Export class for custom instances
-export { FileUploadService }
-
 // Export utilities
-export const uploadUtils = {
-  generateFileName: (name: string) => uploadService.generateFileName(name),
-  validateFile: (file: File) => uploadService.validateFile(file),
-  getPublicUrl: (bucket: string, path: string) => uploadService.getPublicUrl(bucket, path),
-}
-
 export default uploadService

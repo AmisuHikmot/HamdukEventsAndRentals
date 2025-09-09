@@ -1,166 +1,121 @@
-// Google Analytics configuration
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || "G-ZFM0L9VPS9"
-
-// Initialize Google Analytics
-export function initGA() {
-  if (typeof window !== "undefined" && GA_TRACKING_ID) {
-    // Load gtag script
-    const script = document.createElement("script")
-    script.async = true
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`
-    document.head.appendChild(script)
-
-    // Initialize gtag
-    window.dataLayer = window.dataLayer || []
-    function gtag(...args: any[]) {
-      window.dataLayer.push(args)
-    }
-    window.gtag = gtag
-
-    gtag("js", new Date())
-    gtag("config", GA_TRACKING_ID, {
-      page_title: document.title,
-      page_location: window.location.href,
-    })
-  }
-}
-
-// Track page views
-export function trackPageView(url: string, title?: string) {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("config", GA_TRACKING_ID, {
-      page_title: title || document.title,
-      page_location: url,
-    })
-  }
-}
-
-// Track events
-export function trackEvent(action: string, category: string, label?: string, value?: number) {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    })
-  }
-}
-
-// Business-specific tracking functions
-export function trackBookingStarted(eventType: string) {
-  trackEvent("booking_started", "engagement", eventType)
-}
-
-export function trackBookingCompleted(eventType: string, amount: number) {
-  trackEvent("booking_completed", "conversion", eventType, amount)
-}
-
-export function trackPaymentInitiated(amount: number, method: string) {
-  trackEvent("payment_initiated", "ecommerce", method, amount)
-}
-
-export function trackPaymentCompleted(amount: number, method: string) {
-  trackEvent("payment_completed", "ecommerce", method, amount)
-}
-
-export function trackContactFormSubmitted() {
-  trackEvent("contact_form_submitted", "engagement")
-}
-
-export function trackServiceViewed(serviceName: string) {
-  trackEvent("service_viewed", "engagement", serviceName)
-}
-
-export function trackRentalViewed(rentalName: string) {
-  trackEvent("rental_viewed", "engagement", rentalName)
-}
-
-// Performance tracking
-export function trackPerformance() {
-  if (typeof window !== "undefined" && "performance" in window) {
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        const perfData = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
-
-        if (perfData) {
-          // Track page load time
-          const loadTime = perfData.loadEventEnd - perfData.loadEventStart
-          trackEvent("page_load_time", "performance", "load_time", Math.round(loadTime))
-
-          // Track DOM content loaded time
-          const domTime = perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart
-          trackEvent("dom_content_loaded", "performance", "dom_time", Math.round(domTime))
-        }
-      }, 0)
-    })
-  }
-}
-
-// Error tracking
-export function trackError(error: Error, context?: string) {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", "exception", {
-      description: error.message,
-      fatal: false,
-      custom_map: {
-        context: context || "unknown",
-      },
-    })
-  }
-}
-
-// Consent management
-export function updateAnalyticsConsent(granted: boolean) {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("consent", "update", {
-      analytics_storage: granted ? "granted" : "denied",
-    })
-  }
-}
-
-// Initialize analytics with consent
-export function initAnalyticsWithConsent(hasConsent: boolean) {
-  if (typeof window !== "undefined") {
-    // Set initial consent state
-    window.gtag =
-      window.gtag ||
-      (() => {
-        ;(window.dataLayer = window.dataLayer || []).push(arguments)
-      })
-
-    window.gtag("consent", "default", {
-      analytics_storage: hasConsent ? "granted" : "denied",
-    })
-
-    // Initialize GA
-    initGA()
-  }
-}
-
-// Export analytics utilities
-export const analytics = {
-  init: initGA,
-  trackPageView,
-  trackEvent,
-  trackBookingStarted,
-  trackBookingCompleted,
-  trackPaymentInitiated,
-  trackPaymentCompleted,
-  trackContactFormSubmitted,
-  trackServiceViewed,
-  trackRentalViewed,
-  trackPerformance,
-  trackError,
-  updateConsent: updateAnalyticsConsent,
-  initWithConsent: initAnalyticsWithConsent,
-}
-
-export default analytics
-
-// Extend Window interface for TypeScript
+// Google Analytics 4 integration
 declare global {
   interface Window {
     gtag: (...args: any[]) => void
     dataLayer: any[]
   }
+}
+
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || "G-ZFM0L9VPS9"
+
+// Initialize Google Analytics
+export const initGA = () => {
+  if (typeof window === "undefined") return
+
+  window.dataLayer = window.dataLayer || []
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments)
+  }
+
+  window.gtag("js", new Date())
+  window.gtag("config", GA_TRACKING_ID, {
+    page_title: document.title,
+    page_location: window.location.href,
+  })
+}
+
+// Track page views
+export const trackPageView = (url: string, title?: string) => {
+  if (typeof window === "undefined" || !window.gtag) return
+
+  window.gtag("config", GA_TRACKING_ID, {
+    page_path: url,
+    page_title: title,
+  })
+}
+
+// Track custom events
+export const trackEvent = (action: string, parameters?: Record<string, any>) => {
+  if (typeof window === "undefined" || !window.gtag) return
+
+  window.gtag("event", action, {
+    event_category: "engagement",
+    event_label: parameters?.label,
+    value: parameters?.value,
+    ...parameters,
+  })
+}
+
+// Business-specific event tracking
+export const trackBookingEvent = (eventType: string, data: Record<string, any>) => {
+  trackEvent("booking_action", {
+    event_category: "booking",
+    event_label: eventType,
+    booking_type: data.eventType,
+    guest_count: data.guestCount,
+    estimated_value: data.estimatedCost,
+  })
+}
+
+export const trackContactEvent = (source: string) => {
+  trackEvent("contact_form_submit", {
+    event_category: "lead_generation",
+    event_label: source,
+  })
+}
+
+export const trackServiceView = (serviceName: string) => {
+  trackEvent("service_view", {
+    event_category: "service_engagement",
+    event_label: serviceName,
+  })
+}
+
+export const trackRentalView = (rentalName: string, category: string) => {
+  trackEvent("rental_view", {
+    event_category: "rental_engagement",
+    event_label: rentalName,
+    rental_category: category,
+  })
+}
+
+export const trackPaymentEvent = (status: string, amount: number, reference: string) => {
+  trackEvent("payment_action", {
+    event_category: "ecommerce",
+    event_label: status,
+    value: amount,
+    transaction_id: reference,
+  })
+}
+
+// Performance tracking
+export const trackPerformance = (metric: string, value: number) => {
+  trackEvent("performance_metric", {
+    event_category: "performance",
+    event_label: metric,
+    value: Math.round(value),
+  })
+}
+
+// Error tracking
+export const trackError = (error: string, context?: string) => {
+  trackEvent("error", {
+    event_category: "error",
+    event_label: error,
+    error_context: context,
+  })
+}
+
+// Export analytics utilities
+export default {
+  initGA,
+  trackPageView,
+  trackEvent,
+  trackBookingEvent,
+  trackContactEvent,
+  trackServiceView,
+  trackRentalView,
+  trackPaymentEvent,
+  trackPerformance,
+  trackError,
 }

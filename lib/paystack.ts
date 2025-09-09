@@ -1,47 +1,70 @@
-interface PaystackResponse {
+// Paystack integration utilities
+export interface PaystackConfig {
+  publicKey: string
+  secretKey: string
+  baseUrl: string
+}
+
+export interface PaymentData {
+  email: string
+  amount: number // in kobo
+  reference?: string
+  currency?: string
+  callback_url?: string
+  metadata?: Record<string, any>
+}
+
+export interface PaymentResponse {
   status: boolean
   message: string
-  data?: any
+  data?: {
+    authorization_url: string
+    access_code: string
+    reference: string
+  }
 }
 
-interface PaymentData {
-  email: string
-  amount: number
-  reference?: string
-  callback_url?: string
-  metadata?: any
-}
-
-class PaystackService {
-  private secretKey: string
-  private publicKey: string
-  private baseUrl = "https://api.paystack.co"
+export class PaystackService {
+  private config: PaystackConfig
 
   constructor() {
-    this.secretKey = process.env.PAYSTACK_SECRET_KEY || ""
-    this.publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""
+    this.config = {
+      publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+      secretKey: process.env.PAYSTACK_SECRET_KEY || "",
+      baseUrl: "https://api.paystack.co",
+    }
   }
 
   // Generate payment reference
   generateReference(): string {
     const timestamp = Date.now()
     const random = Math.floor(Math.random() * 1000000)
-    return `hamduk_${timestamp}_${random}`
+    return `HMD_${timestamp}_${random}`
+  }
+
+  // Convert amount to kobo (Paystack uses kobo)
+  toKobo(amount: number): number {
+    return Math.round(amount * 100)
+  }
+
+  // Convert amount from kobo to naira
+  fromKobo(amount: number): number {
+    return amount / 100
   }
 
   // Initialize payment
-  async initializePayment(data: PaymentData): Promise<PaystackResponse> {
+  async initializePayment(paymentData: PaymentData): Promise<PaymentResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
+      const response = await fetch(`${this.config.baseUrl}/transaction/initialize`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${this.secretKey}`,
+          Authorization: `Bearer ${this.config.secretKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
-          amount: data.amount * 100, // Convert to kobo
-          reference: data.reference || this.generateReference(),
+          ...paymentData,
+          amount: this.toKobo(paymentData.amount),
+          reference: paymentData.reference || this.generateReference(),
         }),
       })
 
@@ -57,12 +80,13 @@ class PaystackService {
   }
 
   // Verify payment
-  async verifyPayment(reference: string): Promise<PaystackResponse> {
+  async verifyPayment(reference: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/transaction/verify/${reference}`, {
+      const response = await fetch(`${this.config.baseUrl}/transaction/verify/${reference}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${this.secretKey}`,
+          Authorization: `Bearer ${this.config.secretKey}`,
+          "Content-Type": "application/json",
         },
       })
 
@@ -77,77 +101,54 @@ class PaystackService {
     }
   }
 
-  // Get payment details
-  async getPayment(id: string): Promise<PaystackResponse> {
+  // Get transaction details
+  async getTransaction(transactionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/transaction/${id}`, {
+      const response = await fetch(`${this.config.baseUrl}/transaction/${transactionId}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${this.secretKey}`,
+          Authorization: `Bearer ${this.config.secretKey}`,
+          "Content-Type": "application/json",
         },
       })
 
       const result = await response.json()
       return result
     } catch (error) {
-      console.error("Paystack get payment error:", error)
+      console.error("Paystack transaction fetch error:", error)
       return {
         status: false,
-        message: "Failed to get payment details",
+        message: "Failed to fetch transaction",
       }
     }
   }
 
   // List transactions
-  async listTransactions(params?: any): Promise<PaystackResponse> {
+  async listTransactions(params: Record<string, any> = {}): Promise<any> {
     try {
-      const queryParams = new URLSearchParams(params).toString()
-      const response = await fetch(`${this.baseUrl}/transaction?${queryParams}`, {
+      const queryString = new URLSearchParams(params).toString()
+      const response = await fetch(`${this.config.baseUrl}/transaction?${queryString}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${this.secretKey}`,
+          Authorization: `Bearer ${this.config.secretKey}`,
+          "Content-Type": "application/json",
         },
       })
 
       const result = await response.json()
       return result
     } catch (error) {
-      console.error("Paystack list transactions error:", error)
+      console.error("Paystack transactions list error:", error)
       return {
         status: false,
-        message: "Failed to list transactions",
+        message: "Failed to fetch transactions",
       }
     }
   }
-
-  // Convert amount to kobo
-  toKobo(amount: number): number {
-    return Math.round(amount * 100)
-  }
-
-  // Convert amount from kobo
-  fromKobo(amount: number): number {
-    return amount / 100
-  }
-
-  // Get public key
-  getPublicKey(): string {
-    return this.publicKey
-  }
 }
 
-// Export singleton instance
+// Create and export paystack instance
 export const paystack = new PaystackService()
 
-// Export class for custom instances
-export { PaystackService }
-
 // Export utilities
-export const paystackUtils = {
-  generateReference: () => paystack.generateReference(),
-  toKobo: (amount: number) => paystack.toKobo(amount),
-  fromKobo: (amount: number) => paystack.fromKobo(amount),
-  getPublicKey: () => paystack.getPublicKey(),
-}
-
 export default paystack

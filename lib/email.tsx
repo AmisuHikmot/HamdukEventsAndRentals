@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer"
 
 // Email configuration
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number.parseInt(process.env.SMTP_PORT || "587"),
   secure: process.env.SMTP_PORT === "465",
@@ -107,6 +107,44 @@ export const emailTemplates = {
     </body>
     </html>
   `,
+
+  testimonialNotification: (data: any) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>New Testimonial Submission</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #e11d48; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9f9f9; }
+        .testimonial-details { background: white; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .rating { color: #fbbf24; font-size: 18px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>New Testimonial Submission</h1>
+        </div>
+        <div class="content">
+          <div class="testimonial-details">
+            <h3>Testimonial Information</h3>
+            <p><strong>Name:</strong> ${data.name}</p>
+            <p><strong>Email:</strong> ${data.email}</p>
+            <p><strong>Event Type:</strong> ${data.event_type}</p>
+            <p><strong>Event Date:</strong> ${data.event_date}</p>
+            <p><strong>Rating:</strong> <span class="rating">${"★".repeat(data.rating)}${"☆".repeat(5 - data.rating)}</span> (${data.rating}/5)</p>
+            <p><strong>Testimonial:</strong></p>
+            <p>${data.testimonial}</p>
+            <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `,
 }
 
 // Send booking confirmation email
@@ -147,6 +185,25 @@ export async function sendContactNotification(contactData: any) {
   }
 }
 
+// Send testimonial notification
+export async function sendTestimonialNotification(testimonialData: any) {
+  try {
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: process.env.SMTP_USER, // Send to admin
+      subject: `New Testimonial from ${testimonialData.name}`,
+      html: emailTemplates.testimonialNotification(testimonialData),
+    }
+
+    const result = await transporter.sendMail(mailOptions)
+    console.log("Testimonial notification email sent:", result.messageId)
+    return { success: true, messageId: result.messageId }
+  } catch (error) {
+    console.error("Error sending testimonial notification email:", error)
+    return { success: false, error: error.message }
+  }
+}
+
 // Aliases for backward compatibility
 export const sendBookingConfirmationEmail = sendBookingConfirmation
 export const sendContactFormNotification = sendContactNotification
@@ -155,6 +212,7 @@ export const sendContactFormNotification = sendContactNotification
 export default {
   sendBookingConfirmation,
   sendContactNotification,
+  sendTestimonialNotification,
   sendBookingConfirmationEmail,
   sendContactFormNotification,
 }

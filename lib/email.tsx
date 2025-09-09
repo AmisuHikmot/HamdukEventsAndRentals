@@ -1,241 +1,205 @@
 import nodemailer from "nodemailer"
 
-interface EmailConfig {
-  host: string
-  port: number
-  secure: boolean
-  auth: {
-    user: string
-    pass: string
-  }
-}
-
-const emailConfig: EmailConfig = {
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
+// Create transporter
+const transporter = nodemailer.createTransporter({
+  host: process.env.SMTP_HOST,
   port: Number.parseInt(process.env.SMTP_PORT || "587"),
   secure: false,
   auth: {
-    user: process.env.SMTP_USER || "",
-    pass: process.env.SMTP_PASS || "",
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
-}
+})
 
-const transporter = nodemailer.createTransporter(emailConfig)
-
-interface BookingConfirmationData {
-  booking: any
-  payment: any
+export interface BookingEmailData {
+  customerName: string
   customerEmail: string
+  eventDate: string
+  eventType: string
+  services: string[]
+  rentals: string[]
+  totalAmount: number
+  bookingReference: string
 }
 
-export async function sendBookingConfirmationEmail(data: BookingConfirmationData) {
-  const { booking, payment, customerEmail } = data
+export interface ContactEmailData {
+  name: string
+  email: string
+  phone?: string
+  message: string
+}
 
-  const emailTemplate = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Booking Confirmation - Hamduk Events</title>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #e11d48, #f43f5e); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-            .booking-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .detail-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 10px 0; border-bottom: 1px solid #eee; }
-            .footer { text-align: center; margin-top: 30px; color: #666; }
-            .button { background: #e11d48; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>🎉 Booking Confirmed!</h1>
-                <p>Thank you for choosing Hamduk Events and Rentals</p>
-            </div>
-            <div class="content">
-                <h2>Dear Valued Customer,</h2>
-                <p>We're excited to confirm your booking! Your event is now secured and our team is ready to make it memorable.</p>
-                
-                <div class="booking-details">
-                    <h3>Booking Details</h3>
-                    <div class="detail-row">
-                        <strong>Booking Number:</strong>
-                        <span>${booking.booking_number}</span>
-                    </div>
-                    <div class="detail-row">
-                        <strong>Event Type:</strong>
-                        <span>${booking.event_type || "Not specified"}</span>
-                    </div>
-                    <div class="detail-row">
-                        <strong>Event Date:</strong>
-                        <span>${booking.event_date ? new Date(booking.event_date).toLocaleDateString() : "TBD"}</span>
-                    </div>
-                    <div class="detail-row">
-                        <strong>Guest Count:</strong>
-                        <span>${booking.guest_count || "Not specified"}</span>
-                    </div>
-                    <div class="detail-row">
-                        <strong>Location:</strong>
-                        <span>${booking.venue_location || "TBD"}</span>
-                    </div>
-                    <div class="detail-row">
-                        <strong>Total Amount:</strong>
-                        <span>₦${payment.amount.toLocaleString()}</span>
-                    </div>
-                    <div class="detail-row">
-                        <strong>Payment Status:</strong>
-                        <span style="color: green;">✅ Paid</span>
-                    </div>
-                </div>
+export interface TestimonialEmailData {
+  name: string
+  email: string
+  rating: number
+  message: string
+}
 
-                <h3>What's Next?</h3>
-                <ul>
-                    <li>Our event coordinator will contact you within 24 hours</li>
-                    <li>We'll schedule a detailed planning session</li>
-                    <li>Final arrangements will be confirmed 1 week before your event</li>
-                </ul>
+// Email templates
+const bookingConfirmationTemplate = (data: BookingEmailData) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Booking Confirmation - Hamduk Events & Rentals</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0b0d12; font-family:'Segoe UI', Arial, sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#0b0d12;">
+    <tr>
+      <td align="center" style="padding:32px 12px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px; max-width:100%; background:#10131a; border:1px solid #1f2430; border-radius:16px; overflow:hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding:28px 24px 12px 24px; background:linear-gradient(135deg,#2563eb,#7c3aed);">
+              <div style="font-size:22px; line-height:26px; color:#f3f4f6; font-weight:700;">
+                🎉 Hamduk <span style="color:#facc15;">Events & Rentals</span>
+              </div>
+              <p style="margin:8px 0 0; font-size:14px; color:#e5e7eb;">Your booking is locked in!</p>
+            </td>
+          </tr>
 
-                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/booking/status?ref=${booking.booking_number}" class="button">
-                    View Booking Status
-                </a>
+          <!-- Divider -->
+          <tr>
+            <td align="center" style="padding:12px 24px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="140">
+                <tr>
+                  <td style="height:6px; width:20px; background:#7c3aed; border-radius:3px;"></td>
+                  <td style="width:6px;"></td>
+                  <td style="height:6px; width:20px; background:#2563eb; border-radius:3px;"></td>
+                  <td style="width:6px;"></td>
+                  <td style="height:6px; width:20px; background:#facc15; border-radius:3px;"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-                <p>If you have any questions, please don't hesitate to contact us:</p>
-                <p>📞 +234 818 596 8179<br>
-                📧 hamdukuniqueconcept@gmail.com</p>
-            </div>
-            <div class="footer">
-                <p>© 2024 Hamduk Events and Rentals. All rights reserved.</p>
-                <p>No. 4 Dipeolu Street, Ikeja, Lagos, Nigeria</p>
-            </div>
-        </div>
-    </body>
-    </html>
-  `
+          <!-- Content -->
+          <tr>
+            <td align="left" style="padding:28px; color:#cbd5e1; font-size:15px; line-height:24px;">
+              <h2 style="margin:0 0 12px 0; font-size:20px; font-weight:700; color:#f3f4f6;">Hi ${data.customerName}, 👋</h2>
+              <p style="margin:0 0 16px;">Thanks for booking with <strong style="color:#facc15;">Hamduk Events & Rentals</strong>. Here are your booking details:</p>
+              
+              <div style="background:#0b0d12; border:1px solid #1f2430; border-radius:12px; padding:20px; margin-bottom:20px;">
+                <p style="margin:0 0 8px;"><strong>📌 Reference:</strong> <span style="color:#facc15;">${data.bookingReference}</span></p>
+                <p style="margin:0 0 8px;"><strong>📅 Event Date:</strong> ${data.eventDate}</p>
+                <p style="margin:0 0 8px;"><strong>🎭 Event Type:</strong> ${data.eventType}</p>
 
-  const mailOptions = {
-    from: `"Hamduk Events" <${process.env.SMTP_USER}>`,
-    to: customerEmail,
-    subject: `Booking Confirmed - ${booking.booking_number}`,
-    html: emailTemplate,
+                ${
+                  data.services.length > 0
+                    ? `
+                <p style="margin:12px 0 6px;"><strong>🛠 Services:</strong></p>
+                <ul style="margin:0; padding-left:20px;">
+                  ${data.services.map((s) => `<li>${s}</li>`).join("")}
+                </ul>`
+                    : ""
+                }
+
+                ${
+                  data.rentals.length > 0
+                    ? `
+                <p style="margin:12px 0 6px;"><strong>📦 Rentals:</strong></p>
+                <ul style="margin:0; padding-left:20px;">
+                  ${data.rentals.map((r) => `<li>${r}</li>`).join("")}
+                </ul>`
+                    : ""
+                }
+
+                <p style="margin-top:16px; font-size:18px; font-weight:700; color:#22c55e;">💰 Total: ₦${data.totalAmount.toLocaleString()}</p>
+              </div>
+
+              <p style="margin:0;">We’ll reach out <strong>48 hours before your event</strong> to finalize details. If you have questions, feel free to reply anytime. ✨</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:24px; font-size:12px; color:#6b7280;">
+              <p style="margin:0;">📞 +234 XXX XXX XXXX • 📧 info@hamdukevents.com</p>
+              <p style="margin:4px 0 0;">© Hamduk Events & Rentals</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+// Email sending functions
+export async function sendBookingConfirmation(data: BookingEmailData) {
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: data.customerEmail,
+      subject: `Booking Confirmation - ${data.bookingReference}`,
+      html: bookingConfirmationTemplate(data),
+    })
+
+    // Also send notification to admin
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: "admin@hamdukevents.com",
+      subject: `New Booking - ${data.bookingReference}`,
+      html: bookingConfirmationTemplate(data),
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error sending booking confirmation:", error)
+    return { success: false, error }
   }
-
-  await transporter.sendMail(mailOptions)
 }
 
-export async function sendContactFormNotification(data: any) {
-  const emailTemplate = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>New Contact Form Submission</title>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #e11d48; color: white; padding: 20px; text-align: center; }
-            .content { background: #f9f9f9; padding: 20px; }
-            .detail { margin: 10px 0; padding: 10px; background: white; border-radius: 5px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h2>New Contact Form Submission</h2>
-            </div>
-            <div class="content">
-                <div class="detail">
-                    <strong>Name:</strong> ${data.name}
-                </div>
-                <div class="detail">
-                    <strong>Email:</strong> ${data.email}
-                </div>
-                <div class="detail">
-                    <strong>Phone:</strong> ${data.phone || "Not provided"}
-                </div>
-                <div class="detail">
-                    <strong>Subject:</strong> ${data.subject || "General Inquiry"}
-                </div>
-                <div class="detail">
-                    <strong>Message:</strong><br>${data.message}
-                </div>
-                <div class="detail">
-                    <strong>Submitted:</strong> ${new Date().toLocaleString()}
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-  `
+export async function sendContactNotification(data: ContactEmailData) {
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: "admin@hamdukevents.com",
+      subject: `New Contact Form Submission from ${data.name}`,
+      html: contactNotificationTemplate(data),
+    })
 
-  const mailOptions = {
-    from: `"Website Contact Form" <${process.env.SMTP_USER}>`,
-    to: "hamdukuniqueconcept@gmail.com",
-    subject: `New Contact: ${data.subject || "General Inquiry"}`,
-    html: emailTemplate,
+    // Send auto-reply to customer
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: data.email,
+      subject: "Thank you for contacting Hamduk Events & Rentals",
+      html: `
+        <h2>Thank you for your message!</h2>
+        <p>Dear ${data.name},</p>
+        <p>We have received your message and will get back to you within 24 hours.</p>
+        <p>Best regards,<br>Hamduk Events & Rentals Team</p>
+      `,
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error sending contact notification:", error)
+    return { success: false, error }
   }
-
-  await transporter.sendMail(mailOptions)
 }
 
-export async function sendTestimonialNotification(data: any) {
-  const emailTemplate = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>New Testimonial Submission</title>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #e11d48; color: white; padding: 20px; text-align: center; }
-            .content { background: #f9f9f9; padding: 20px; }
-            .detail { margin: 10px 0; padding: 10px; background: white; border-radius: 5px; }
-            .rating { color: #fbbf24; font-size: 20px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h2>New Testimonial Submission</h2>
-            </div>
-            <div class="content">
-                <div class="detail">
-                    <strong>Name:</strong> ${data.name}
-                </div>
-                <div class="detail">
-                    <strong>Email:</strong> ${data.email}
-                </div>
-                <div class="detail">
-                    <strong>Event Type:</strong> ${data.eventType || "Not specified"}
-                </div>
-                <div class="detail">
-                    <strong>Event Date:</strong> ${data.eventDate || "Not specified"}
-                </div>
-                <div class="detail">
-                    <strong>Rating:</strong> 
-                    <span class="rating">${"★".repeat(data.rating)}${"☆".repeat(5 - data.rating)}</span>
-                    (${data.rating}/5)
-                </div>
-                <div class="detail">
-                    <strong>Testimonial:</strong><br>${data.testimonial}
-                </div>
-                <div class="detail">
-                    <strong>Submitted:</strong> ${new Date().toLocaleString()}
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-  `
+export async function sendTestimonialNotification(data: TestimonialEmailData) {
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: "admin@hamdukevents.com",
+      subject: `New Testimonial from ${data.name}`,
+      html: testimonialNotificationTemplate(data),
+    })
 
-  const mailOptions = {
-    from: `"Website Testimonials" <${process.env.SMTP_USER}>`,
-    to: "hamdukuniqueconcept@gmail.com",
-    subject: `New Testimonial from ${data.name} - ${data.rating} stars`,
-    html: emailTemplate,
+    return { success: true }
+  } catch (error) {
+    console.error("Error sending testimonial notification:", error)
+    return { success: false, error }
   }
-
-  await transporter.sendMail(mailOptions)
 }
+
+// Export aliases for the missing exports
+export const sendContactFormNotification = sendContactNotification
+export const sendBookingConfirmationEmail = sendBookingConfirmation

@@ -1,24 +1,18 @@
 "use client"
 
-import { useEffect } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
-import { pageview, GA_TRACKING_ID } from "@/lib/analytics"
 import Script from "next/script"
+import { usePathname, useSearchParams } from "next/navigation"
+import { useEffect } from "react"
+import { trackPageView, GA_TRACKING_ID } from "@/lib/analytics"
 
 export function Analytics() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (GA_TRACKING_ID) {
-      const url = pathname + searchParams.toString()
-      pageview(url)
-    }
+    const url = pathname + searchParams.toString()
+    trackPageView(url)
   }, [pathname, searchParams])
-
-  if (!GA_TRACKING_ID) {
-    return null
-  }
 
   return (
     <>

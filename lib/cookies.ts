@@ -1,180 +1,230 @@
-interface CookieOptions {
+export interface CookieOptions {
   expires?: Date
   maxAge?: number
-  domain?: string
   path?: string
+  domain?: string
   secure?: boolean
   httpOnly?: boolean
   sameSite?: "strict" | "lax" | "none"
 }
 
-export class CookieManager {
-  static set(name: string, value: string, options: CookieOptions = {}) {
-    if (typeof window === "undefined") return
+export interface UserPreferences {
+  theme: "light" | "dark" | "system"
+  language: string
+  notifications: boolean
+  analytics: boolean
+  marketing: boolean
+}
 
-    let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
+export interface BookingSession {
+  bookingId?: string
+  eventType?: string
+  selectedServices: string[]
+  selectedRentals: string[]
+  eventDate?: string
+  customerInfo?: {
+    name: string
+    email: string
+    phone: string
+  }
+  totalAmount?: number
+  paymentReference?: string
+}
 
-    if (options.expires) {
-      cookieString += `; expires=${options.expires.toUTCString()}`
-    }
+export interface ShoppingCart {
+  services: Array<{
+    id: string
+    name: string
+    price: number
+    quantity: number
+  }>
+  rentals: Array<{
+    id: string
+    name: string
+    price: number
+    quantity: number
+    duration: number
+  }>
+  totalAmount: number
+  lastUpdated: string
+}
 
-    if (options.maxAge) {
-      cookieString += `; max-age=${options.maxAge}`
-    }
+// Cookie management utilities
+export function setCookie(name: string, value: string, options: CookieOptions = {}) {
+  if (typeof document === "undefined") return
 
-    if (options.domain) {
-      cookieString += `; domain=${options.domain}`
-    }
+  let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
 
-    if (options.path) {
-      cookieString += `; path=${options.path}`
-    } else {
-      cookieString += "; path=/"
-    }
-
-    if (options.secure) {
-      cookieString += "; secure"
-    }
-
-    if (options.sameSite) {
-      cookieString += `; samesite=${options.sameSite}`
-    }
-
-    document.cookie = cookieString
+  if (options.expires) {
+    cookieString += `; expires=${options.expires.toUTCString()}`
   }
 
-  static get(name: string): string | null {
-    if (typeof window === "undefined") return null
-
-    const nameEQ = encodeURIComponent(name) + "="
-    const cookies = document.cookie.split(";")
-
-    for (const cookie of cookies) {
-      const c = cookie.trim()
-      if (c.indexOf(nameEQ) === 0) {
-        return decodeURIComponent(c.substring(nameEQ.length))
-      }
-    }
-
-    return null
+  if (options.maxAge) {
+    cookieString += `; max-age=${options.maxAge}`
   }
 
-  static remove(name: string, options: Partial<CookieOptions> = {}) {
-    this.set(name, "", {
-      ...options,
-      expires: new Date(0),
-    })
+  if (options.path) {
+    cookieString += `; path=${options.path}`
   }
 
-  static getAll(): Record<string, string> {
-    if (typeof window === "undefined") return {}
+  if (options.domain) {
+    cookieString += `; domain=${options.domain}`
+  }
 
-    const cookies: Record<string, string> = {}
-    const cookieArray = document.cookie.split(";")
+  if (options.secure) {
+    cookieString += "; secure"
+  }
 
-    for (const cookie of cookieArray) {
-      const [name, value] = cookie.trim().split("=")
-      if (name && value) {
-        cookies[decodeURIComponent(name)] = decodeURIComponent(value)
-      }
+  if (options.httpOnly) {
+    cookieString += "; httponly"
+  }
+
+  if (options.sameSite) {
+    cookieString += `; samesite=${options.sameSite}`
+  }
+
+  document.cookie = cookieString
+}
+
+export function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+
+  const nameEQ = encodeURIComponent(name) + "="
+  const cookies = document.cookie.split(";")
+
+  for (const cookie of cookies) {
+    const c = cookie.trim()
+    if (c.indexOf(nameEQ) === 0) {
+      return decodeURIComponent(c.substring(nameEQ.length))
     }
+  }
 
-    return cookies
+  return null
+}
+
+export function deleteCookie(name: string, path = "/") {
+  setCookie(name, "", { expires: new Date(0), path })
+}
+
+// User preferences management
+export function getUserPreferences(): UserPreferences {
+  const preferences = getCookie("user_preferences")
+  if (preferences) {
+    try {
+      return JSON.parse(preferences)
+    } catch (error) {
+      console.error("Error parsing user preferences:", error)
+    }
+  }
+
+  return {
+    theme: "system",
+    language: "en",
+    notifications: true,
+    analytics: false,
+    marketing: false,
   }
 }
 
-// Specific cookie handlers for the application
-export const AppCookies = {
-  // User preferences
-  setUserPreferences(preferences: any) {
-    CookieManager.set("user_preferences", JSON.stringify(preferences), {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      sameSite: "lax",
-    })
-  },
+export function setUserPreferences(preferences: UserPreferences) {
+  setCookie("user_preferences", JSON.stringify(preferences), {
+    expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+    path: "/",
+    sameSite: "lax",
+  })
+}
 
-  getUserPreferences(): any {
-    const prefs = CookieManager.get("user_preferences")
-    return prefs ? JSON.parse(prefs) : null
-  },
+// Booking session management
+export function getBookingSession(): BookingSession {
+  const session = getCookie("booking_session")
+  if (session) {
+    try {
+      return JSON.parse(session)
+    } catch (error) {
+      console.error("Error parsing booking session:", error)
+    }
+  }
 
-  // Booking session data
-  setBookingSession(data: any) {
-    CookieManager.set("booking_session", JSON.stringify(data), {
-      maxAge: 24 * 60 * 60, // 24 hours
-      sameSite: "lax",
-    })
-  },
+  return {
+    selectedServices: [],
+    selectedRentals: [],
+  }
+}
 
-  getBookingSession(): any {
-    const session = CookieManager.get("booking_session")
-    return session ? JSON.parse(session) : null
-  },
+export function setBookingSession(session: BookingSession) {
+  setCookie("booking_session", JSON.stringify(session), {
+    maxAge: 24 * 60 * 60, // 24 hours
+    path: "/",
+    sameSite: "lax",
+  })
+}
 
-  clearBookingSession() {
-    CookieManager.remove("booking_session")
-  },
+export function clearBookingSession() {
+  deleteCookie("booking_session")
+}
 
-  // Cart data for rentals
-  setCart(items: any[]) {
-    CookieManager.set("rental_cart", JSON.stringify(items), {
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      sameSite: "lax",
-    })
-  },
+// Shopping cart management
+export function getShoppingCart(): ShoppingCart {
+  const cart = getCookie("shopping_cart")
+  if (cart) {
+    try {
+      return JSON.parse(cart)
+    } catch (error) {
+      console.error("Error parsing shopping cart:", error)
+    }
+  }
 
-  getCart(): any[] {
-    const cart = CookieManager.get("rental_cart")
-    return cart ? JSON.parse(cart) : []
-  },
+  return {
+    services: [],
+    rentals: [],
+    totalAmount: 0,
+    lastUpdated: new Date().toISOString(),
+  }
+}
 
-  clearCart() {
-    CookieManager.remove("rental_cart")
-  },
+export function setShoppingCart(cart: ShoppingCart) {
+  cart.lastUpdated = new Date().toISOString()
+  setCookie("shopping_cart", JSON.stringify(cart), {
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    path: "/",
+    sameSite: "lax",
+  })
+}
 
-  // Recently viewed items
-  setRecentlyViewed(items: any[]) {
-    CookieManager.set("recently_viewed", JSON.stringify(items.slice(0, 10)), {
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      sameSite: "lax",
-    })
-  },
+export function clearShoppingCart() {
+  deleteCookie("shopping_cart")
+}
 
-  getRecentlyViewed(): any[] {
-    const items = CookieManager.get("recently_viewed")
-    return items ? JSON.parse(items) : []
-  },
+// Consent management
+export function hasConsent(type: "analytics" | "marketing" | "functional"): boolean {
+  const preferences = getUserPreferences()
+  switch (type) {
+    case "analytics":
+      return preferences.analytics
+    case "marketing":
+      return preferences.marketing
+    case "functional":
+      return true // Always allowed for basic functionality
+    default:
+      return false
+  }
+}
 
-  addToRecentlyViewed(item: any) {
-    const current = this.getRecentlyViewed()
-    const filtered = current.filter((i) => i.id !== item.id)
-    const updated = [item, ...filtered].slice(0, 10)
-    this.setRecentlyViewed(updated)
-  },
+export function setConsent(type: "analytics" | "marketing", granted: boolean) {
+  const preferences = getUserPreferences()
+  preferences[type] = granted
+  setUserPreferences(preferences)
+}
 
-  // Analytics consent
-  setAnalyticsConsent(consent: boolean) {
-    CookieManager.set("analytics_consent", consent.toString(), {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      sameSite: "lax",
-    })
-  },
+// Cookie consent status
+export function getCookieConsentStatus(): boolean {
+  return getCookie("cookie_consent") === "accepted"
+}
 
-  getAnalyticsConsent(): boolean | null {
-    const consent = CookieManager.get("analytics_consent")
-    return consent ? consent === "true" : null
-  },
-
-  // Marketing consent
-  setMarketingConsent(consent: boolean) {
-    CookieManager.set("marketing_consent", consent.toString(), {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      sameSite: "lax",
-    })
-  },
-
-  getMarketingConsent(): boolean | null {
-    const consent = CookieManager.get("marketing_consent")
-    return consent ? consent === "true" : null
-  },
+export function setCookieConsentStatus(accepted: boolean) {
+  setCookie("cookie_consent", accepted ? "accepted" : "declined", {
+    expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+    path: "/",
+    sameSite: "lax",
+  })
 }

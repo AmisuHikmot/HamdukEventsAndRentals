@@ -1,13 +1,24 @@
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void
+    gtag: (command: string, targetId: string, config?: Record<string, any>) => void
     dataLayer: any[]
   }
 }
 
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || "G-ZFM0L9VPS9"
 
-export const pageview = (url: string) => {
+// Initialize Google Analytics
+export function initGA() {
+  if (typeof window !== "undefined" && GA_TRACKING_ID) {
+    window.gtag("config", GA_TRACKING_ID, {
+      page_title: document.title,
+      page_location: window.location.href,
+    })
+  }
+}
+
+// Track page views
+export function trackPageView(url: string) {
   if (typeof window !== "undefined" && window.gtag) {
     window.gtag("config", GA_TRACKING_ID, {
       page_path: url,
@@ -15,17 +26,8 @@ export const pageview = (url: string) => {
   }
 }
 
-export const event = ({
-  action,
-  category,
-  label,
-  value,
-}: {
-  action: string
-  category: string
-  label?: string
-  value?: number
-}) => {
+// Track custom events
+export function trackEvent(action: string, category: string, label?: string, value?: number) {
   if (typeof window !== "undefined" && window.gtag) {
     window.gtag("event", action, {
       event_category: category,
@@ -35,52 +37,53 @@ export const event = ({
   }
 }
 
-// Custom events for the business
-export const trackBookingStarted = (eventType: string) => {
-  event({
-    action: "booking_started",
-    category: "engagement",
-    label: eventType,
-  })
+// Business-specific tracking events
+export function trackBookingStarted(eventType: string) {
+  trackEvent("booking_started", "engagement", eventType)
 }
 
-export const trackBookingCompleted = (eventType: string, amount: number) => {
-  event({
-    action: "booking_completed",
-    category: "conversion",
-    label: eventType,
-    value: amount,
-  })
+export function trackBookingCompleted(eventType: string, amount: number) {
+  trackEvent("booking_completed", "conversion", eventType, amount)
 }
 
-export const trackContactFormSubmitted = (subject: string) => {
-  event({
-    action: "contact_form_submitted",
-    category: "engagement",
-    label: subject,
-  })
+export function trackPaymentInitiated(amount: number) {
+  trackEvent("payment_initiated", "ecommerce", "paystack", amount)
 }
 
-export const trackTestimonialSubmitted = (rating: number) => {
-  event({
-    action: "testimonial_submitted",
-    category: "engagement",
-    value: rating,
-  })
+export function trackPaymentCompleted(amount: number) {
+  trackEvent("payment_completed", "ecommerce", "paystack", amount)
 }
 
-export const trackRentalViewed = (itemName: string, category: string) => {
-  event({
-    action: "rental_viewed",
-    category: "engagement",
-    label: `${category} - ${itemName}`,
-  })
+export function trackContactFormSubmitted() {
+  trackEvent("contact_form_submitted", "engagement", "contact_page")
 }
 
-export const trackServiceViewed = (serviceName: string) => {
-  event({
-    action: "service_viewed",
-    category: "engagement",
-    label: serviceName,
-  })
+export function trackTestimonialSubmitted(rating: number) {
+  trackEvent("testimonial_submitted", "engagement", "testimonial_page", rating)
+}
+
+export function trackServiceViewed(serviceName: string) {
+  trackEvent("service_viewed", "engagement", serviceName)
+}
+
+export function trackRentalViewed(rentalName: string) {
+  trackEvent("rental_viewed", "engagement", rentalName)
+}
+
+export function trackGalleryViewed() {
+  trackEvent("gallery_viewed", "engagement", "gallery_page")
+}
+
+export function trackBlogPostViewed(postTitle: string) {
+  trackEvent("blog_post_viewed", "engagement", postTitle)
+}
+
+// Performance tracking
+export function trackPerformance(metricName: string, value: number) {
+  trackEvent("performance_metric", "performance", metricName, value)
+}
+
+// Error tracking
+export function trackError(errorMessage: string, errorLocation: string) {
+  trackEvent("error_occurred", "error", `${errorLocation}: ${errorMessage}`)
 }

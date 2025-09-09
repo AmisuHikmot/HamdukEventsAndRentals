@@ -228,3 +228,82 @@ export function setCookieConsentStatus(accepted: boolean) {
     sameSite: "lax",
   })
 }
+
+// AppCookies object for backward compatibility
+export const AppCookies = {
+  // User preferences
+  setUserPreferences(preferences: UserPreferences) {
+    setUserPreferences(preferences)
+  },
+
+  getUserPreferences(): UserPreferences {
+    return getUserPreferences()
+  },
+
+  // Booking session data
+  setBookingSession(data: BookingSession) {
+    setBookingSession(data)
+  },
+
+  getBookingSession(): BookingSession {
+    return getBookingSession()
+  },
+
+  clearBookingSession() {
+    clearBookingSession()
+  },
+
+  // Cart data for rentals
+  setCart(items: ShoppingCart) {
+    setShoppingCart(items)
+  },
+
+  getCart(): ShoppingCart {
+    return getShoppingCart()
+  },
+
+  clearCart() {
+    clearShoppingCart()
+  },
+
+  // Recently viewed items
+  setRecentlyViewed(items: any[]) {
+    setCookie("recently_viewed", JSON.stringify(items.slice(0, 10)), {
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+      sameSite: "lax",
+    })
+  },
+
+  getRecentlyViewed(): any[] {
+    const items = getCookie("recently_viewed")
+    return items ? JSON.parse(items) : []
+  },
+
+  addToRecentlyViewed(item: any) {
+    const current = this.getRecentlyViewed()
+    const filtered = current.filter((i) => i.id !== item.id)
+    const updated = [item, ...filtered].slice(0, 10)
+    this.setRecentlyViewed(updated)
+  },
+
+  // Analytics consent
+  setAnalyticsConsent(consent: boolean) {
+    setConsent("analytics", consent)
+  },
+
+  getAnalyticsConsent(): boolean | null {
+    const preferences = getUserPreferences()
+    return preferences.analytics
+  },
+
+  // Marketing consent
+  setMarketingConsent(consent: boolean) {
+    setConsent("marketing", consent)
+  },
+
+  getMarketingConsent(): boolean | null {
+    const preferences = getUserPreferences()
+    return preferences.marketing
+  },
+}

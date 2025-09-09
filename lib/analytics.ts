@@ -1,16 +1,24 @@
-declare global {
-  interface Window {
-    gtag: (command: string, targetId: string, config?: Record<string, any>) => void
-    dataLayer: any[]
-  }
-}
-
+// Google Analytics configuration
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || "G-ZFM0L9VPS9"
 
 // Initialize Google Analytics
 export function initGA() {
   if (typeof window !== "undefined" && GA_TRACKING_ID) {
-    window.gtag("config", GA_TRACKING_ID, {
+    // Load gtag script
+    const script = document.createElement("script")
+    script.async = true
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`
+    document.head.appendChild(script)
+
+    // Initialize gtag
+    window.dataLayer = window.dataLayer || []
+    function gtag(...args: any[]) {
+      window.dataLayer.push(args)
+    }
+    window.gtag = gtag
+
+    gtag("js", new Date())
+    gtag("config", GA_TRACKING_ID, {
       page_title: document.title,
       page_location: window.location.href,
     })
@@ -18,15 +26,16 @@ export function initGA() {
 }
 
 // Track page views
-export function trackPageView(url: string) {
+export function trackPageView(url: string, title?: string) {
   if (typeof window !== "undefined" && window.gtag) {
     window.gtag("config", GA_TRACKING_ID, {
-      page_path: url,
+      page_title: title || document.title,
+      page_location: url,
     })
   }
 }
 
-// Track custom events
+// Track events
 export function trackEvent(action: string, category: string, label?: string, value?: number) {
   if (typeof window !== "undefined" && window.gtag) {
     window.gtag("event", action, {
@@ -37,7 +46,7 @@ export function trackEvent(action: string, category: string, label?: string, val
   }
 }
 
-// Business-specific tracking events
+// Business-specific tracking functions
 export function trackBookingStarted(eventType: string) {
   trackEvent("booking_started", "engagement", eventType)
 }
@@ -46,20 +55,16 @@ export function trackBookingCompleted(eventType: string, amount: number) {
   trackEvent("booking_completed", "conversion", eventType, amount)
 }
 
-export function trackPaymentInitiated(amount: number) {
-  trackEvent("payment_initiated", "ecommerce", "paystack", amount)
+export function trackPaymentInitiated(amount: number, method: string) {
+  trackEvent("payment_initiated", "ecommerce", method, amount)
 }
 
-export function trackPaymentCompleted(amount: number) {
-  trackEvent("payment_completed", "ecommerce", "paystack", amount)
+export function trackPaymentCompleted(amount: number, method: string) {
+  trackEvent("payment_completed", "ecommerce", method, amount)
 }
 
 export function trackContactFormSubmitted() {
-  trackEvent("contact_form_submitted", "engagement", "contact_page")
-}
-
-export function trackTestimonialSubmitted(rating: number) {
-  trackEvent("testimonial_submitted", "engagement", "testimonial_page", rating)
+  trackEvent("contact_form_submitted", "engagement")
 }
 
 export function trackServiceViewed(serviceName: string) {
@@ -70,20 +75,92 @@ export function trackRentalViewed(rentalName: string) {
   trackEvent("rental_viewed", "engagement", rentalName)
 }
 
-export function trackGalleryViewed() {
-  trackEvent("gallery_viewed", "engagement", "gallery_page")
-}
-
-export function trackBlogPostViewed(postTitle: string) {
-  trackEvent("blog_post_viewed", "engagement", postTitle)
-}
-
 // Performance tracking
-export function trackPerformance(metricName: string, value: number) {
-  trackEvent("performance_metric", "performance", metricName, value)
+export function trackPerformance() {
+  if (typeof window !== "undefined" && "performance" in window) {
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        const perfData = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming
+
+        if (perfData) {
+          // Track page load time
+          const loadTime = perfData.loadEventEnd - perfData.loadEventStart
+          trackEvent("page_load_time", "performance", "load_time", Math.round(loadTime))
+
+          // Track DOM content loaded time
+          const domTime = perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart
+          trackEvent("dom_content_loaded", "performance", "dom_time", Math.round(domTime))
+        }
+      }, 0)
+    })
+  }
 }
 
 // Error tracking
-export function trackError(errorMessage: string, errorLocation: string) {
-  trackEvent("error_occurred", "error", `${errorLocation}: ${errorMessage}`)
+export function trackError(error: Error, context?: string) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "exception", {
+      description: error.message,
+      fatal: false,
+      custom_map: {
+        context: context || "unknown",
+      },
+    })
+  }
+}
+
+// Consent management
+export function updateAnalyticsConsent(granted: boolean) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("consent", "update", {
+      analytics_storage: granted ? "granted" : "denied",
+    })
+  }
+}
+
+// Initialize analytics with consent
+export function initAnalyticsWithConsent(hasConsent: boolean) {
+  if (typeof window !== "undefined") {
+    // Set initial consent state
+    window.gtag =
+      window.gtag ||
+      (() => {
+        ;(window.dataLayer = window.dataLayer || []).push(arguments)
+      })
+
+    window.gtag("consent", "default", {
+      analytics_storage: hasConsent ? "granted" : "denied",
+    })
+
+    // Initialize GA
+    initGA()
+  }
+}
+
+// Export analytics utilities
+export const analytics = {
+  init: initGA,
+  trackPageView,
+  trackEvent,
+  trackBookingStarted,
+  trackBookingCompleted,
+  trackPaymentInitiated,
+  trackPaymentCompleted,
+  trackContactFormSubmitted,
+  trackServiceViewed,
+  trackRentalViewed,
+  trackPerformance,
+  trackError,
+  updateConsent: updateAnalyticsConsent,
+  initWithConsent: initAnalyticsWithConsent,
+}
+
+export default analytics
+
+// Extend Window interface for TypeScript
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void
+    dataLayer: any[]
+  }
 }

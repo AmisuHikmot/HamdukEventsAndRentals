@@ -1,174 +1,153 @@
-export interface PaystackConfig {
-  publicKey: string
-  secretKey: string
-  baseUrl: string
+interface PaystackResponse {
+  status: boolean
+  message: string
+  data?: any
 }
 
-export interface PaymentData {
+interface PaymentData {
   email: string
-  amount: number // in kobo
-  reference: string
+  amount: number
+  reference?: string
   callback_url?: string
-  metadata?: {
-    booking_id: string
-    customer_name: string
-    event_type: string
-    [key: string]: any
+  metadata?: any
+}
+
+class PaystackService {
+  private secretKey: string
+  private publicKey: string
+  private baseUrl = "https://api.paystack.co"
+
+  constructor() {
+    this.secretKey = process.env.PAYSTACK_SECRET_KEY || ""
+    this.publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""
   }
-}
 
-export interface PaymentResponse {
-  status: boolean
-  message: string
-  data?: {
-    authorization_url: string
-    access_code: string
-    reference: string
+  // Generate payment reference
+  generateReference(): string {
+    const timestamp = Date.now()
+    const random = Math.floor(Math.random() * 1000000)
+    return `hamduk_${timestamp}_${random}`
   }
-}
 
-export interface VerificationResponse {
-  status: boolean
-  message: string
-  data?: {
-    id: number
-    domain: string
-    status: string
-    reference: string
-    amount: number
-    message: string
-    gateway_response: string
-    paid_at: string
-    created_at: string
-    channel: string
-    currency: string
-    ip_address: string
-    metadata: any
-    log: any
-    fees: number
-    fees_split: any
-    authorization: {
-      authorization_code: string
-      bin: string
-      last4: string
-      exp_month: string
-      exp_year: string
-      channel: string
-      card_type: string
-      bank: string
-      country_code: string
-      brand: string
-      reusable: boolean
-      signature: string
-      account_name: string
-    }
-    customer: {
-      id: number
-      first_name: string
-      last_name: string
-      email: string
-      customer_code: string
-      phone: string
-      metadata: any
-      risk_action: string
-    }
-    plan: any
-    split: any
-    order_id: any
-    paidAt: string
-    createdAt: string
-    requested_amount: number
-    pos_transaction_data: any
-    source: any
-    fees_breakdown: any
-  }
-}
+  // Initialize payment
+  async initializePayment(data: PaymentData): Promise<PaystackResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          amount: data.amount * 100, // Convert to kobo
+          reference: data.reference || this.generateReference(),
+        }),
+      })
 
-const config: PaystackConfig = {
-  publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-  secretKey: process.env.PAYSTACK_SECRET_KEY || "",
-  baseUrl: "https://api.paystack.co",
-}
-
-export async function initializePayment(paymentData: PaymentData): Promise<PaymentResponse> {
-  try {
-    const response = await fetch(`${config.baseUrl}/transaction/initialize`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${config.secretKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(paymentData),
-    })
-
-    const result = await response.json()
-    return result
-  } catch (error) {
-    console.error("Error initializing payment:", error)
-    return {
-      status: false,
-      message: "Failed to initialize payment",
+      const result = await response.json()
+      return result
+    } catch (error) {
+      console.error("Paystack initialization error:", error)
+      return {
+        status: false,
+        message: "Failed to initialize payment",
+      }
     }
   }
-}
 
-export async function verifyPayment(reference: string): Promise<VerificationResponse> {
-  try {
-    const response = await fetch(`${config.baseUrl}/transaction/verify/${reference}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${config.secretKey}`,
-        "Content-Type": "application/json",
-      },
-    })
+  // Verify payment
+  async verifyPayment(reference: string): Promise<PaystackResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/transaction/verify/${reference}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+        },
+      })
 
-    const result = await response.json()
-    return result
-  } catch (error) {
-    console.error("Error verifying payment:", error)
-    return {
-      status: false,
-      message: "Failed to verify payment",
+      const result = await response.json()
+      return result
+    } catch (error) {
+      console.error("Paystack verification error:", error)
+      return {
+        status: false,
+        message: "Failed to verify payment",
+      }
     }
   }
-}
 
-export function generatePaymentReference(): string {
-  const timestamp = Date.now()
-  const random = Math.random().toString(36).substring(2, 15)
-  return `HAMDUK_${timestamp}_${random}`.toUpperCase()
-}
+  // Get payment details
+  async getPayment(id: string): Promise<PaystackResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/transaction/${id}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+        },
+      })
 
-export function convertToKobo(nairaAmount: number): number {
-  return Math.round(nairaAmount * 100)
-}
-
-export function convertFromKobo(koboAmount: number): number {
-  return koboAmount / 100
-}
-
-// Paystack service class
-export class PaystackService {
-  async initializePayment(paymentData: PaymentData): Promise<PaymentResponse> {
-    return initializePayment(paymentData)
+      const result = await response.json()
+      return result
+    } catch (error) {
+      console.error("Paystack get payment error:", error)
+      return {
+        status: false,
+        message: "Failed to get payment details",
+      }
+    }
   }
 
-  async verifyPayment(reference: string): Promise<VerificationResponse> {
-    return verifyPayment(reference)
+  // List transactions
+  async listTransactions(params?: any): Promise<PaystackResponse> {
+    try {
+      const queryParams = new URLSearchParams(params).toString()
+      const response = await fetch(`${this.baseUrl}/transaction?${queryParams}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+        },
+      })
+
+      const result = await response.json()
+      return result
+    } catch (error) {
+      console.error("Paystack list transactions error:", error)
+      return {
+        status: false,
+        message: "Failed to list transactions",
+      }
+    }
   }
 
-  generatePaymentReference(): string {
-    return generatePaymentReference()
+  // Convert amount to kobo
+  toKobo(amount: number): number {
+    return Math.round(amount * 100)
   }
 
-  convertToKobo(nairaAmount: number): number {
-    return convertToKobo(nairaAmount)
+  // Convert amount from kobo
+  fromKobo(amount: number): number {
+    return amount / 100
   }
 
-  convertFromKobo(koboAmount: number): number {
-    return convertFromKobo(koboAmount)
+  // Get public key
+  getPublicKey(): string {
+    return this.publicKey
   }
 }
 
-// Export paystack service instance
+// Export singleton instance
 export const paystack = new PaystackService()
+
+// Export class for custom instances
+export { PaystackService }
+
+// Export utilities
+export const paystackUtils = {
+  generateReference: () => paystack.generateReference(),
+  toKobo: (amount: number) => paystack.toKobo(amount),
+  fromKobo: (amount: number) => paystack.fromKobo(amount),
+  getPublicKey: () => paystack.getPublicKey(),
+}
+
+export default paystack

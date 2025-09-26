@@ -3,15 +3,26 @@
 import Script from "next/script"
 import { usePathname, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
-import { trackPageView, GA_TRACKING_ID } from "@/lib/analytics"
+
+const GA_TRACKING_ID = "G-ZFM0L9VPS9"
+
+declare global {
+  interface Window {
+    gtag: (command: string, targetId: string, config?: any) => void
+  }
+}
 
 export function Analytics() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const url = pathname + searchParams.toString()
-    trackPageView(url)
+    if (typeof window !== "undefined" && window.gtag) {
+      const url = pathname + searchParams.toString()
+      window.gtag("config", GA_TRACKING_ID, {
+        page_path: url,
+      })
+    }
   }, [pathname, searchParams])
 
   return (

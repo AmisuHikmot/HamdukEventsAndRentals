@@ -5,18 +5,20 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // Client-side Supabase client
-export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey)
-
-// Server-side Supabase client with service role key
-export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey)
-
-// Export createClient for compatibility
-export const createClient = (url?: string, key?: string) => {
-  return createSupabaseClient(url || supabaseUrl, key || supabaseAnonKey)
+export const createClient = () => {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
 
-// Default export
-export default supabase
+// Default client instance
+export const supabase = createClient()
+
+// Admin client with service role key (server-side only)
+export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
 
 // Database types
 export interface Database {
@@ -25,117 +27,179 @@ export interface Database {
       bookings: {
         Row: {
           id: string
-          booking_number: string
+          created_at: string
           customer_name: string
           customer_email: string
           customer_phone: string
-          event_type: string
           event_date: string
-          event_time: string
+          event_type: string
+          venue: string
           guest_count: number
-          location: string | null
-          additional_info: string | null
-          status: "pending" | "confirmed" | "cancelled" | "completed"
           total_amount: number
-          created_at: string
-          updated_at: string
+          payment_status: string
+          payment_reference: string
+          status: string
+          notes: string
         }
         Insert: {
           id?: string
-          booking_number: string
+          created_at?: string
           customer_name: string
           customer_email: string
           customer_phone: string
-          event_type: string
           event_date: string
-          event_time: string
+          event_type: string
+          venue: string
           guest_count: number
-          location?: string | null
-          additional_info?: string | null
-          status?: "pending" | "confirmed" | "cancelled" | "completed"
           total_amount: number
-          created_at?: string
-          updated_at?: string
+          payment_status?: string
+          payment_reference?: string
+          status?: string
+          notes?: string
         }
         Update: {
           id?: string
-          booking_number?: string
+          created_at?: string
           customer_name?: string
           customer_email?: string
           customer_phone?: string
-          event_type?: string
           event_date?: string
-          event_time?: string
+          event_type?: string
+          venue?: string
           guest_count?: number
-          location?: string | null
-          additional_info?: string | null
-          status?: "pending" | "confirmed" | "cancelled" | "completed"
           total_amount?: number
-          created_at?: string
-          updated_at?: string
+          payment_status?: string
+          payment_reference?: string
+          status?: string
+          notes?: string
         }
       }
-      rental_items: {
+      services: {
         Row: {
           id: string
           name: string
-          description: string | null
-          price_per_unit: number
-          category_id: string
-          image_url: string | null
-          is_active: boolean
-          quantity_available: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          price_per_unit: number
-          category_id: string
-          image_url?: string | null
-          is_active?: boolean
-          quantity_available: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          price_per_unit?: number
-          category_id?: string
-          image_url?: string | null
-          is_active?: boolean
-          quantity_available?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      categories: {
-        Row: {
-          id: string
-          name: string
-          slug: string
-          description: string | null
+          description: string
+          price: number
+          category: string
+          image_url: string
           created_at: string
         }
         Insert: {
           id?: string
           name: string
-          slug: string
-          description?: string | null
+          description: string
+          price: number
+          category: string
+          image_url?: string
           created_at?: string
         }
         Update: {
           id?: string
           name?: string
-          slug?: string
-          description?: string | null
+          description?: string
+          price?: number
+          category?: string
+          image_url?: string
+          created_at?: string
+        }
+      }
+      rentals: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          price_per_day: number
+          category: string
+          image_url: string
+          availability: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          price_per_day: number
+          category: string
+          image_url?: string
+          availability?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          price_per_day?: number
+          category?: string
+          image_url?: string
+          availability?: boolean
+          created_at?: string
+        }
+      }
+      testimonials: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          event_type: string
+          rating: number
+          testimonial: string
+          approved: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          event_type: string
+          rating: number
+          testimonial: string
+          approved?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          event_type?: string
+          rating?: number
+          testimonial?: string
+          approved?: boolean
+          created_at?: string
+        }
+      }
+      contact_submissions: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string
+          subject: string
+          message: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone: string
+          subject: string
+          message: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string
+          subject?: string
+          message?: string
           created_at?: string
         }
       }
     }
   }
 }
+
+export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"]
+export type Inserts<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Insert"]
+export type Updates<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Update"]

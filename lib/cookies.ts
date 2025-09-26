@@ -1,5 +1,4 @@
-// Cookie management utilities
-export interface CookieOptions {
+interface CookieOptions {
   expires?: Date
   maxAge?: number
   path?: string
@@ -9,9 +8,9 @@ export interface CookieOptions {
   sameSite?: "strict" | "lax" | "none"
 }
 
-export class CookieManager {
+export class AppCookies {
   static set(name: string, value: string, options: CookieOptions = {}) {
-    if (typeof window === "undefined") return
+    if (typeof document === "undefined") return
 
     let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
 
@@ -47,7 +46,7 @@ export class CookieManager {
   }
 
   static get(name: string): string | null {
-    if (typeof window === "undefined") return null
+    if (typeof document === "undefined") return null
 
     const nameEQ = encodeURIComponent(name) + "="
     const cookies = document.cookie.split(";")
@@ -62,118 +61,196 @@ export class CookieManager {
     return null
   }
 
-  static remove(name: string, options: Partial<CookieOptions> = {}) {
-    this.set(name, "", {
-      ...options,
-      expires: new Date(0),
-    })
+  static remove(name: string, options: Omit<CookieOptions, "expires" | "maxAge"> = {}) {
+    this.set(name, "", { ...options, expires: new Date(0) })
   }
 
-  static exists(name: string): boolean {
-    return this.get(name) !== null
-  }
-}
+  static getAll(): Record<string, string> {
+    if (typeof document === "undefined") return {}
 
-// App-specific cookie utilities
-export class AppCookies {
-  // Cookie consent
-  static setCookieConsent(consent: boolean) {
-    CookieManager.set("cookie-consent", consent.toString(), {
-      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-      path: "/",
-    })
-  }
+    const cookies: Record<string, string> = {}
+    const cookieArray = document.cookie.split(";")
 
-  static getCookieConsent(): boolean | null {
-    const consent = CookieManager.get("cookie-consent")
-    return consent ? consent === "true" : null
+    for (const cookie of cookieArray) {
+      const [name, value] = cookie.trim().split("=")
+      if (name && value) {
+        cookies[decodeURIComponent(name)] = decodeURIComponent(value)
+      }
+    }
+
+    return cookies
   }
 
-  // Analytics consent
+  // Analytics consent methods
   static setAnalyticsConsent(consent: boolean) {
-    CookieManager.set("analytics-consent", consent.toString(), {
+    this.set("analytics_consent", consent.toString(), {
       expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
       path: "/",
+      sameSite: "lax",
     })
   }
 
-  static getAnalyticsConsent(): boolean {
-    const consent = CookieManager.get("analytics-consent")
-    return consent === "true"
+  static getAnalyticsConsent(): boolean | null {
+    const consent = this.get("analytics_consent")
+    return consent === null ? null : consent === "true"
   }
 
-  // Marketing consent
+  // Marketing consent methods
   static setMarketingConsent(consent: boolean) {
-    CookieManager.set("marketing-consent", consent.toString(), {
+    this.set("marketing_consent", consent.toString(), {
       expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
       path: "/",
+      sameSite: "lax",
     })
   }
 
-  static getMarketingConsent(): boolean {
-    const consent = CookieManager.get("marketing-consent")
-    return consent === "true"
+  static getMarketingConsent(): boolean | null {
+    const consent = this.get("marketing_consent")
+    return consent === null ? null : consent === "true"
   }
 
-  // User preferences
-  static setUserPreferences(preferences: Record<string, any>) {
-    CookieManager.set("user-preferences", JSON.stringify(preferences), {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+  // User preferences methods
+  static setUserPreferences(preferences: any) {
+    this.set("user_preferences", JSON.stringify(preferences), {
+      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
       path: "/",
+      sameSite: "lax",
     })
   }
 
-  static getUserPreferences(): Record<string, any> {
-    const preferences = CookieManager.get("user-preferences")
-    return preferences ? JSON.parse(preferences) : {}
+  static getUserPreferences(): any {
+    const prefs = this.get("user_preferences")
+    return prefs
+      ? JSON.parse(prefs)
+      : {
+          theme: "system",
+          language: "en",
+          notifications: true,
+          analytics: false,
+          marketing: false,
+        }
   }
 
-  // Booking session
-  static setBookingSession(sessionData: Record<string, any>) {
-    CookieManager.set("booking-session", JSON.stringify(sessionData), {
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+  // Booking session methods
+  static setBookingSession(data: any) {
+    this.set("booking_session", JSON.stringify(data), {
+      maxAge: 24 * 60 * 60, // 24 hours
       path: "/",
+      sameSite: "lax",
     })
   }
 
-  static getBookingSession(): Record<string, any> | null {
-    const session = CookieManager.get("booking-session")
-    return session ? JSON.parse(session) : null
+  static getBookingSession(): any {
+    const session = this.get("booking_session")
+    return session
+      ? JSON.parse(session)
+      : {
+          selectedServices: [],
+          selectedRentals: [],
+        }
   }
 
   static clearBookingSession() {
-    CookieManager.remove("booking-session")
+    this.remove("booking_session")
   }
 
-  // Shopping cart
-  static setCart(cartData: Record<string, any>) {
-    CookieManager.set("shopping-cart", JSON.stringify(cartData), {
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+  // Cart methods
+  static setCart(items: any) {
+    this.set("rental_cart", JSON.stringify(items), {
+      maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
+      sameSite: "lax",
     })
   }
 
-  static getCart(): Record<string, any> {
-    const cart = CookieManager.get("shopping-cart")
-    return cart ? JSON.parse(cart) : { items: [], total: 0 }
+  static getCart(): any {
+    const cart = this.get("rental_cart")
+    return cart
+      ? JSON.parse(cart)
+      : {
+          services: [],
+          rentals: [],
+          totalAmount: 0,
+          lastUpdated: new Date().toISOString(),
+        }
   }
 
   static clearCart() {
-    CookieManager.remove("shopping-cart")
+    this.remove("rental_cart")
   }
 
-  // Theme preference
+  // Recently viewed methods
+  static setRecentlyViewed(items: any[]) {
+    this.set("recently_viewed", JSON.stringify(items.slice(0, 10)), {
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+      sameSite: "lax",
+    })
+  }
+
+  static getRecentlyViewed(): any[] {
+    const items = this.get("recently_viewed")
+    return items ? JSON.parse(items) : []
+  }
+
+  static addToRecentlyViewed(item: any) {
+    const current = this.getRecentlyViewed()
+    const filtered = current.filter((i) => i.id !== item.id)
+    const updated = [item, ...filtered].slice(0, 10)
+    this.setRecentlyViewed(updated)
+  }
+
+  // Theme methods
   static setTheme(theme: string) {
-    CookieManager.set("theme", theme, {
+    this.set("theme", theme, {
       expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
       path: "/",
+      sameSite: "lax",
     })
   }
 
   static getTheme(): string | null {
-    return CookieManager.get("theme")
+    return this.get("theme")
+  }
+
+  // Cookie consent status
+  static setCookieConsentStatus(accepted: boolean) {
+    this.set("cookie_consent", accepted ? "accepted" : "declined", {
+      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      path: "/",
+      sameSite: "lax",
+    })
+  }
+
+  static getCookieConsentStatus(): boolean {
+    return this.get("cookie_consent") === "accepted"
+  }
+
+  // General consent methods
+  static setConsent(type: "analytics" | "marketing" | "functional", value: boolean) {
+    this.set(`consent_${type}`, value.toString(), {
+      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      path: "/",
+      sameSite: "lax",
+    })
+  }
+
+  static getConsent(type: "analytics" | "marketing" | "functional"): boolean | null {
+    const value = this.get(`consent_${type}`)
+    return value === null ? null : value === "true"
+  }
+
+  static hasConsent(): boolean {
+    return this.get("consent_given") === "true"
+  }
+
+  static setConsentGiven() {
+    this.set("consent_given", "true", {
+      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      path: "/",
+      sameSite: "lax",
+    })
   }
 }
 
-// Export utilities
-export { CookieManager as default }
+export default AppCookies

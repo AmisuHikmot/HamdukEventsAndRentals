@@ -116,7 +116,7 @@ export default function Home() {
               category="Furniture"
             />
             <RentalItemCard
-              image="/roundtables_60inchimg.jpg?height=300&width=400"
+              image="/roundtable_60inchimg.jpg?height=300&width=400"
               title="Round Tables (60&quot;)"
               price={12}
               category="Furniture"

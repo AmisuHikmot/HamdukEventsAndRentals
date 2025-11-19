@@ -157,7 +157,7 @@ export default function Home() {
             <TestimonialCard
               name="Nasfat"
               role="Muslim Society"
-              quote="We've used Hamduk for multiple get-together events and they consistently deliver high-quality service and equipment."
+              quote="We've used Hamduk for multiple get-together events and they consistently deliver high-quality service and equipments."
               rating={5}
             />
             <TestimonialCard

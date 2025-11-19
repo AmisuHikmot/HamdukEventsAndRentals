@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AppCookies } from "@/lib/cookies"
 
 export default function BookingPage() {
+  const [open, setOpen] = useState(false)
   const [date, setDate] = useState<Date>()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)

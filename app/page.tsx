@@ -149,21 +149,21 @@ export default function Home() {
           </div>
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8 md:mt-12">
             <TestimonialCard
-              name="Sarah Johnson"
-              role="Bride"
-              quote="Hamduk Events made our wedding day absolutely perfect. Their attention to detail and professionalism exceeded our expectations."
+              name="Abdulhakeem Gbeseoyemi"
+              role="Imam"
+              quote="Hamduk Events made our Event day absolutely perfect. Their attention to detail and professionalism exceeded our expectations."
               rating={5}
             />
             <TestimonialCard
-              name="Michael Chen"
-              role="Corporate Event Manager"
-              quote="We've used Hamduk for multiple company events and they consistently deliver high-quality service and equipment."
+              name="Nasfat"
+              role="Muslim Society"
+              quote="We've used Hamduk for multiple get-together events and they consistently deliver high-quality service and equipment."
               rating={5}
             />
             <TestimonialCard
-              name="Jessica Williams"
-              role="Birthday Celebrant"
-              quote="The team at Hamduk transformed my 40th birthday into an unforgettable celebration. Highly recommend!"
+              name="Esther Idowu"
+              role="Naming"
+              quote="The team at Hamduk transformed my baby's Naming into an unforgettable celebration. Highly recommend!"
               rating={5}
             />
           </div>

@@ -14,16 +14,11 @@ export async function POST(request: NextRequest) {
     const { bookingId, email, amount: rawAmount, customerInfo } = body ?? {}
 
     // Basic validation
-    if (!bookingId || !email || rawAmount == null) {
+    if (!bookingId || !email) {
       return NextResponse.json(
-        { error: "Missing required fields: bookingId, email or amount" },
+        { error: "Missing required fields: bookingId or email" },
         { status: 400 }
       )
-    }
-
-    const amount = Number(rawAmount)
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
     }
 
     // Verify booking exists
@@ -38,26 +33,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 })
     }
 
-    // Try to validate amount against booking record (common field names)
-    // If your bookings table uses a different field name for the price, update these keys.
-    const bookingAmountCandidate =
-      booking.amount ?? booking.price ?? booking.total_amount ?? null
-
-    if (bookingAmountCandidate != null) {
-      const bookingAmountNum = Number(bookingAmountCandidate)
-      // If booking has a price and it doesn't match the client's amount, reject to avoid tampering.
-      if (Number.isFinite(bookingAmountNum) && bookingAmountNum !== amount) {
-        console.error(
-          "Amount mismatch: client provided",
-          amount,
-          "but booking expects",
-          bookingAmountNum
-        )
-        return NextResponse.json(
-          { error: "Amount does not match booking total" },
-          { status: 400 }
-        )
+    // Use booking.total_amount as source of truth if present; otherwise fall back to client amount
+    let amount: number | null = null
+    if (booking.total_amount != null) {
+      const n = Number(booking.total_amount)
+      if (!Number.isFinite(n) || n <= 0) {
+        return NextResponse.json({ error: "Invalid booking total_amount" }, { status: 400 })
       }
+      amount = n
+    } else if (rawAmount != null) {
+      const n = Number(rawAmount)
+      if (!Number.isFinite(n) || n <= 0) {
+        return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
+      }
+      amount = n
+    } else {
+      return NextResponse.json({ error: "No amount available for payment" }, { status: 400 })
     }
 
     // Prevent duplicate pending payment for same booking (optional but recommended)
@@ -70,7 +61,6 @@ export async function POST(request: NextRequest) {
 
     if (Array.isArray(existingPayments) && existingPayments.length > 0) {
       const existing = existingPayments[0]
-      // If we already have a pending payment, return its auth url (if stored) to avoid duplicates
       if (existing?.gateway_response?.authorization_url) {
         return NextResponse.json({
           success: true,
@@ -84,24 +74,24 @@ export async function POST(request: NextRequest) {
     // Generate unique reference server-side
     const reference = paystack.generateReference()
 
-    // Convert to kobo for Paystack (Naira * 100)
-    const paystackAmount = Math.round(amount * 100)
-
     // Build callback_url - ensure your NEXT_PUBLIC_BASE_URL is set and correct for production
-    const callbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") || ""}/payment/callback`
+    const base = (process.env.NEXT_PUBLIC_BASE_URL ?? "").replace(/\/$/, "")
+    const callbackUrl = base ? `${base}/payment/callback` : `/payment/callback`
 
-    // Initialize Paystack transaction
-    const paystackResponse = await paystack.initializeTransaction({
+    // NOTE: pass amount in NAIRA to paystack.initializePayment (service converts to kobo)
+    const paystackResponse = await paystack.initializePayment({
       email,
-      amount: paystackAmount,
+      amount,
       reference,
       callback_url: callbackUrl,
       metadata: {
         booking_id: bookingId,
+        booking_number: booking.booking_number ?? null,
         customer_name: `${customerInfo?.firstName ?? ""} ${customerInfo?.lastName ?? ""}`.trim(),
         customer_phone: customerInfo?.phone ?? null,
       },
-      channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
+      // channels param may be ignored by your service; included for completeness
+      // channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
     })
 
     if (!paystackResponse?.status) {
@@ -109,12 +99,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to initialize payment" }, { status: 502 })
     }
 
-    // Persist payment record (store amount as received from client, but you can store both naira & kobo if you prefer)
+    // Persist payment record (store both Naira & kobo)
+    const amountKobo = Math.round(amount * 100)
+
     const { error: paymentError } = await supabase.from("payments").insert({
       booking_id: bookingId,
       payment_reference: reference,
-      amount, // in Naira (keep consistent with your app)
-      amount_kobo: paystackAmount, // optional: useful for debugging/verification
+      amount, // Naira
+      amount_kobo: amountKobo,
       payment_method: "paystack",
       payment_gateway: "paystack",
       status: "pending",

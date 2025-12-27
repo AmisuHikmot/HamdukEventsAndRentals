@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -12,20 +18,54 @@ import { AppCookies } from "@/lib/cookies"
 import { trackBookingCompleted } from "@/lib/analytics"
 import { CreditCard, Shield, Loader2 } from "lucide-react"
 
+type BookingSession = {
+  bookingId?: string
+  bookingNumber?: string
+  amount?: number
+  customerInfo?: {
+    firstName?: string
+    lastName?: string
+    email?: string
+    phone?: string
+  }
+  [k: string]: any
+}
+
+const formatCurrency = (value?: number) => {
+  if (typeof value !== "number" || Number.isNaN(value)) return "0"
+  // show no decimal places for Naira; change as needed
+  return value.toLocaleString()
+}
+
 export default function PaymentPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [bookingSession, setBookingSession] = useState<any>(null)
+  const [bookingSession, setBookingSession] = useState<BookingSession | null>(null)
 
   useEffect(() => {
-    const session = AppCookies.getBookingSession()
-    if (!session) {
+    const sessionRaw = AppCookies.getBookingSession()
+    if (!sessionRaw) {
       router.push("/booking")
       return
     }
-    setBookingSession(session)
+
+    // Normalize session and ensure amount is a number
+    const normalized: BookingSession = {
+      ...sessionRaw,
+      amount: (() => {
+        const a = sessionRaw?.amount
+        // handle string numbers, numeric types, etc.
+        const n = Number(a)
+        return Number.isFinite(n) ? n : 0
+      })(),
+      customerInfo: {
+        ...(sessionRaw?.customerInfo ?? {}),
+      },
+    }
+
+    setBookingSession(normalized)
   }, [router])
 
   const handlePayment = async () => {
@@ -35,6 +75,9 @@ export default function PaymentPage() {
     setError(null)
 
     try {
+      // NOTE: Paystack usually expects amount in kobo (Naira * 100). Convert if needed.
+      // const paystackAmount = Math.round((bookingSession.amount || 0) * 100);
+
       const response = await fetch("/api/payments/initialize", {
         method: "POST",
         headers: {
@@ -42,7 +85,7 @@ export default function PaymentPage() {
         },
         body: JSON.stringify({
           bookingId: bookingSession.bookingId,
-          email: bookingSession.customerInfo.email,
+          email: bookingSession.customerInfo?.email,
           amount: bookingSession.amount,
           customerInfo: bookingSession.customerInfo,
         }),
@@ -51,14 +94,18 @@ export default function PaymentPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to initialize payment")
+        throw new Error(data?.error || "Failed to initialize payment")
       }
 
-      // Track payment initiation
-      trackBookingCompleted("payment_initiated", bookingSession.amount)
+      // Track payment initiation (safe: only call with a number)
+      trackBookingCompleted?.("payment_initiated", bookingSession.amount ?? 0)
 
-      // Redirect to Paystack
-      window.location.href = data.authorization_url
+      // Redirect to Paystack (authorization_url expected from backend)
+      if (data?.authorization_url) {
+        window.location.href = data.authorization_url
+      } else {
+        throw new Error("Payment gateway did not return an authorization URL")
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment initialization failed")
     } finally {
@@ -78,11 +125,20 @@ export default function PaymentPage() {
     )
   }
 
+  const amt = bookingSession.amount ?? 0
+  const baseFee = amt * 0.7
+  const addServices = amt * 0.25
+  const processing = amt * 0.05
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Complete Your Payment</h1>
-        <p className="text-gray-600 dark:text-gray-400">Secure your booking with our trusted payment gateway</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Complete Your Payment
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Secure your booking with our trusted payment gateway
+        </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -90,26 +146,26 @@ export default function PaymentPage() {
         <Card>
           <CardHeader>
             <CardTitle>Payment Summary</CardTitle>
-            <CardDescription>Booking #{bookingSession.bookingNumber}</CardDescription>
+            <CardDescription>Booking #{bookingSession.bookingNumber ?? "—"}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Base Service Fee</span>
-                <span>₦{(bookingSession.amount * 0.7).toLocaleString()}</span>
+                <span>₦{formatCurrency(baseFee)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Additional Services</span>
-                <span>₦{(bookingSession.amount * 0.25).toLocaleString()}</span>
+                <span>₦{formatCurrency(addServices)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Processing Fee</span>
-                <span>₦{(bookingSession.amount * 0.05).toLocaleString()}</span>
+                <span>₦{formatCurrency(processing)}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-semibold">
                 <span>Total Amount</span>
-                <span>₦{bookingSession.amount.toLocaleString()}</span>
+                <span>₦{formatCurrency(amt)}</span>
               </div>
             </div>
 
@@ -170,7 +226,7 @@ export default function PaymentPage() {
               ) : (
                 <>
                   <Shield className="h-4 w-4 mr-2" />
-                  Pay ₦{bookingSession.amount.toLocaleString()}
+                  Pay ₦{formatCurrency(amt)}
                 </>
               )}
             </Button>
@@ -192,20 +248,20 @@ export default function PaymentPage() {
             <div>
               <Label>Name</Label>
               <p className="font-medium">
-                {bookingSession.customerInfo.firstName} {bookingSession.customerInfo.lastName}
+                {`${bookingSession.customerInfo?.firstName ?? ""} ${bookingSession.customerInfo?.lastName ?? ""}`.trim() || "—"}
               </p>
             </div>
             <div>
               <Label>Email</Label>
-              <p className="font-medium">{bookingSession.customerInfo.email}</p>
+              <p className="font-medium">{bookingSession.customerInfo?.email ?? "—"}</p>
             </div>
             <div>
               <Label>Phone</Label>
-              <p className="font-medium">{bookingSession.customerInfo.phone}</p>
+              <p className="font-medium">{bookingSession.customerInfo?.phone ?? "—"}</p>
             </div>
             <div>
               <Label>Booking Reference</Label>
-              <p className="font-medium">{bookingSession.bookingNumber}</p>
+              <p className="font-medium">{bookingSession.bookingNumber ?? "—"}</p>
             </div>
           </div>
         </CardContent>

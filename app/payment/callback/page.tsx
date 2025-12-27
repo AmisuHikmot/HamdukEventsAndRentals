@@ -2,16 +2,37 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, XCircle, Loader2 } from "lucide-react"
+
+type PaymentData = {
+  status?: string
+  amount?: number | string
+  booking_number?: string
+  customer?: {
+    email?: string
+  }
+  [k: string]: any
+}
+
+const formatCurrency = (value?: number) => {
+  if (typeof value !== "number" || Number.isNaN(value)) return "0"
+  return value.toLocaleString()
+}
 
 export default function PaymentCallbackPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<"loading" | "success" | "failed">("loading")
-  const [paymentData, setPaymentData] = useState<any>(null)
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -42,12 +63,22 @@ export default function PaymentCallbackPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Payment verification failed")
+        throw new Error(data?.error || "Payment verification failed")
       }
 
-      if (data.status === "success") {
+      if (data?.status === "success") {
+        // Normalize amount (Paystack usually returns kobo)
+        const rawAmount = Number(data?.amount)
+        const amountInNaira = Number.isFinite(rawAmount)
+          ? rawAmount / 100 // remove /100 if backend already converts
+          : 0
+
+        setPaymentData({
+          ...data,
+          amount: amountInNaira,
+        })
+
         setStatus("success")
-        setPaymentData(data)
       } else {
         setStatus("failed")
         setError("Payment was not successful")
@@ -59,11 +90,9 @@ export default function PaymentCallbackPage() {
   }
 
   const handleContinue = () => {
-    if (status === "success" && paymentData) {
-      // Redirect to booking status page
-      router.push(`/booking/status?ref=${paymentData.booking_number || ""}`)
+    if (status === "success" && paymentData?.booking_number) {
+      router.push(`/booking/status?ref=${paymentData.booking_number}`)
     } else {
-      // Redirect to home page
       router.push("/")
     }
   }
@@ -105,11 +134,15 @@ export default function PaymentCallbackPage() {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>Amount:</span>
-                    <span className="font-medium">₦{paymentData.amount?.toLocaleString()}</span>
+                    <span className="font-medium">
+                      ₦{formatCurrency(paymentData.amount as number)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Customer:</span>
-                    <span className="font-medium">{paymentData.customer?.email}</span>
+                    <span className="font-medium">
+                      {paymentData.customer?.email ?? "—"}
+                    </span>
                   </div>
                 </div>
               </div>

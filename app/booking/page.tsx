@@ -18,7 +18,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AppCookies } from "@/lib/cookies"
 
 export default function BookingPage() {
-  const [open, setOpen] = useState(false)
   const [date, setDate] = useState<Date>()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -239,7 +238,7 @@ export default function BookingPage() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="eventDate">Event Date</Label>
-                    <Popover open={open} onOpenChange={setOpen}>
+                    <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant={"outline"}
@@ -250,7 +249,7 @@ export default function BookingPage() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={date} captionLayout="dropdown" onSelect={handleDateChange} initialFocus/>
+                        <Calendar mode="single" selected={date} onSelect={handleDateChange} initialFocus />
                       </PopoverContent>
                     </Popover>
                   </div>

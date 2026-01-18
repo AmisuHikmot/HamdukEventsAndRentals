@@ -7,10 +7,47 @@ import { Card, CardContent } from "@/components/ui/card"
 import { TestimonialCard } from "@/components/testimonial-card"
 import { ServiceCard } from "@/components/service-card"
 import { RentalItemCard } from "@/components/rental-item-card"
+import { StructuredData } from "@/components/structured-data"
+import { generateBreadcrumbSchema, generateServiceSchema } from "@/lib/jsonld"
+
+const featuredServices = [
+  {
+    title: "Event Planning",
+    description: "Full-service event planning from concept to execution, including venue selection, vendor coordination, and timeline management.",
+    basePrice: 500,
+    priceType: "Starting",
+  },
+  {
+    title: "Equipment Rentals",
+    description: "High-quality rentals including tables, chairs, linens, tableware, lighting, sound systems, and more.",
+    basePrice: 100,
+    priceType: "Starting",
+  },
+  {
+    title: "Staffing Solutions",
+    description: "Professional event staff including servers, bartenders, security, and event coordinators.",
+    basePrice: 150,
+    priceType: "Per Person",
+  },
+]
 
 export default function Home() {
+  const breadcrumbSchema = generateBreadcrumbSchema([{ name: "Home", url: "/" }])
+
+  const serviceSchemas = featuredServices.map((service) =>
+    generateServiceSchema({
+      name: service.title,
+      description: service.description,
+      basePrice: service.basePrice,
+      priceType: service.priceType,
+    })
+  )
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      <StructuredData schema={breadcrumbSchema} />
+      <StructuredData schema={serviceSchemas} />
+      <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-rose-50 to-white dark:from-gray-900 dark:to-gray-950">
         <div className="container px-4 md:px-6">
@@ -90,7 +127,7 @@ export default function Home() {
             />
           </div>
           <div className="flex justify-center mt-8">
-            <Button asChild variant="outline" className="mt-4">
+            <Button asChild variant="outline" className="mt-4 bg-transparent">
               <Link href="/services">View All Services</Link>
             </Button>
           </div>
@@ -129,7 +166,7 @@ export default function Home() {
             />
           </div>
           <div className="flex justify-center mt-8">
-            <Button asChild variant="outline" className="mt-4">
+            <Button asChild variant="outline" className="mt-4 bg-transparent">
               <Link href="/rentals">View All Rentals</Link>
             </Button>
           </div>
@@ -217,6 +254,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   )
 }

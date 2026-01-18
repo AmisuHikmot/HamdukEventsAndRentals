@@ -10,6 +10,7 @@ import { ScrollToTop } from "@/components/scroll-to-top"
 import { Analytics } from "@/components/analytics"
 import { Toaster } from "@/components/ui/sonner"
 import { Suspense } from "react"
+import { generateOrganizationSchema, createJsonLdScript } from "@/lib/jsonld"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -78,8 +79,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const organizationSchema = generateOrganizationSchema()
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: createJsonLdScript(organizationSchema) }}
+        />
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <Suspense fallback={null}>

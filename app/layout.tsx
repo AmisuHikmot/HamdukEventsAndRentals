@@ -27,18 +27,18 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Hamduk Events & Rentals - Premier Event Planning Services",
     description: "Transform your special occasions with professional event planning and premium equipment rentals.",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/",
     siteName: "Hamduk Events & Rentals",
     images: [
       {
-        url: "/home_img1.jpeg",
+        url: "/logo.png",
         width: 1200,
         height: 630,
         alt: "Hamduk Events & Rentals - Premier Event Planning",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [{ url: "/favicon.ico" }, { url: "/logo.png", sizes: "32x32", type: "image/png" }],
+    icon: [{ url: "/favicon.ico" }, { url: "/logo.png", sizes: "48x48", type: "image/png" }],
     apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
   },
   verification: {

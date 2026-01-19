@@ -18,14 +18,14 @@ export const generateOrganizationSchema = (): JSONLDSchema => ({
   name: "Hamduk Events & Rentals",
   description:
     "Premier event planning and equipment rental services for weddings, corporate events, and celebrations",
-  url: process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com",
+  url: process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/",
   logo: {
     "@type": "ImageObject",
-    url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com"}/logo.png`,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/"}/logo.png`,
     width: 256,
     height: 256,
   },
-  image: `${process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com"}/home_img1.jpeg`,
+  image: `${process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/"}/home_img1.jpeg`,
   contact: {
     "@type": "ContactPoint",
     contactType: "Customer Service",
@@ -75,7 +75,7 @@ export interface ProductSchemaProps {
 export const generateProductSchema = (props: ProductSchemaProps): JSONLDSchema => ({
   "@context": "https://schema.org",
   "@type": "Product",
-  "@id": `${process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com"}/rentals/${props.id}`,
+  "@id": `${process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng"}/rentals/${props.id}`,
   name: props.name,
   description: props.description,
   category: props.category,
@@ -86,7 +86,7 @@ export const generateProductSchema = (props: ProductSchemaProps): JSONLDSchema =
   },
   offers: {
     "@type": "Offer",
-    url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com"}/rentals/${props.id}`,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng"}/rentals/${props.id}`,
     priceCurrency: "NGN",
     price: props.price.toString(),
     availability:
@@ -136,7 +136,7 @@ export const generateEventSchema = (props: EventSchemaProps): JSONLDSchema => ({
   organizer: {
     "@type": "Organization",
     name: props.organizer || "Hamduk Events & Rentals",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/",
   },
 })
 
@@ -155,7 +155,7 @@ export const generateBreadcrumbSchema = (items: BreadcrumbItem[]): JSONLDSchema 
     "@type": "ListItem",
     position: index + 1,
     name: item.name,
-    item: `${process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com"}${item.url}`,
+    item: `${process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng"}${item.url}`,
   })),
 })
 
@@ -201,7 +201,7 @@ export const generateServiceSchema = (props: ServiceSchemaProps): JSONLDSchema =
   provider: {
     "@type": "Organization",
     name: "Hamduk Events & Rentals",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://hamdukevents.com",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/",
   },
   ...(props.basePrice && {
     offers: {

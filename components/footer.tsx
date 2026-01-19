@@ -85,6 +85,8 @@ export function Footer() {
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">No. 4 Dipeolu Street, Ikeja, Lagos, Nigeria</span>
+                 <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">No. 1 Amusugbo Okoafo, Badagry, Lagos, Nigeria</span>
               </div>
             </div>
           </div>

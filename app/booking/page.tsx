@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { Metadata } from "next"
 
 import { useState } from "react"
 import { CalendarIcon, CheckCircle2 } from "lucide-react"
@@ -16,6 +17,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppCookies } from "@/lib/cookies"
+
+export const metadata: Metadata = {
+  title: "Book Your Event - Hamduk Events & Rentals",
+  description: "Schedule your event consultation with Hamduk Events & Rentals. Easy booking process for weddings, corporate events, and celebrations.",
+  keywords: "event booking, book event, schedule consultation, event planning booking, Lagos",
+  openGraph: {
+    title: "Book Your Event - Hamduk Events & Rentals",
+    description: "Book your event consultation with our expert team",
+    url: "https://eventz.hamduk.com.ng/booking",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 export default function BookingPage() {
   const [date, setDate] = useState<Date>()

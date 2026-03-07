@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { Calendar, Clock, Search, User } from "lucide-react"
@@ -6,6 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+
+export const metadata: Metadata = {
+  title: "Event Planning Blog - Hamduk Events & Rentals",
+  description: "Read expert tips, trends, and inspiration for planning your perfect event. Learn from our experienced event planners.",
+  keywords: "event planning tips, wedding blog, event trends, party planning guide, event inspiration, Lagos events",
+  openGraph: {
+    title: "Event Planning Blog - Hamduk Events & Rentals",
+    description: "Tips, trends, and inspiration for planning your perfect event",
+    url: "https://eventz.hamduk.com.ng/blog",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 export default function BlogPage() {
   return (

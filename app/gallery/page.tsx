@@ -1,5 +1,6 @@
 "use client"
 
+import type { Metadata } from "next"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -7,6 +8,19 @@ import { Filter } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+export const metadata: Metadata = {
+  title: "Event Gallery - Hamduk Events & Rentals",
+  description: "Browse our stunning event gallery showcasing beautiful weddings, corporate events, birthdays, and celebrations we've created.",
+  keywords: "event gallery, wedding gallery, corporate events, party photos, event inspiration, Lagos events",
+  openGraph: {
+    title: "Event Gallery - Hamduk Events & Rentals",
+    description: "See our beautiful event designs and transformations",
+    url: "https://eventz.hamduk.com.ng/gallery",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 // Initial gallery images
 const initialImages = Array.from({ length: 12 }).map((_, i) => ({

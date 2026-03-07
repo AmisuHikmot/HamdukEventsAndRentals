@@ -1,8 +1,22 @@
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { CalendarDays, Clock, MapPin, PartyPopper, Phone } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+
+export const metadata: Metadata = {
+  title: "About Hamduk Events & Rentals - Premier Event Service Provider",
+  description: "Learn about Hamduk Events & Rentals, a decade-long leader in professional event planning, equipment rentals, and exceptional event services in Lagos.",
+  keywords: "about us, event company, professional event planning, event rentals, Lagos events, experienced planners",
+  openGraph: {
+    title: "About Hamduk Events & Rentals",
+    description: "Creating unforgettable experiences for over a decade",
+    url: "https://eventz.hamduk.com.ng/about",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 export default function AboutPage() {
   return (

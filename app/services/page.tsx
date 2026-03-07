@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import {
   CalendarClock,
   CalendarDays,
@@ -17,6 +18,19 @@ import { Button } from "@/components/ui/button"
 import { ServiceCard } from "@/components/service-card"
 import { StructuredData } from "@/components/structured-data"
 import { generateServiceSchema, generateBreadcrumbSchema } from "@/lib/jsonld"
+
+export const metadata: Metadata = {
+  title: "Event Planning & Rental Services - Hamduk Events & Rentals",
+  description: "Explore our comprehensive event planning and rental services including equipment rentals, staffing, decor, catering coordination, and more.",
+  keywords: "event services, event planning, equipment rental, staffing, decor design, catering coordination, Lagos events",
+  openGraph: {
+    title: "Event Planning & Rental Services - Hamduk Events & Rentals",
+    description: "Professional event services tailored to your unique vision",
+    url: "https://eventz.hamduk.com.ng/services",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 const services = [
   {

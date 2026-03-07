@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { Metadata } from "next"
 
 import { useState } from "react"
 import { Filter, Search } from "lucide-react"
@@ -11,6 +12,19 @@ import { RentalItemCard } from "@/components/rental-item-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { StructuredData } from "@/components/structured-data"
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/jsonld"
+
+export const metadata: Metadata = {
+  title: "Premium Equipment Rentals - Hamduk Events & Rentals",
+  description: "Browse our extensive catalog of premium rental equipment including tables, chairs, linens, lighting, sound systems, and more for your perfect event.",
+  keywords: "equipment rental, party rentals, event equipment, chairs, tables, linens, lighting, sound system, Lagos",
+  openGraph: {
+    title: "Premium Equipment Rentals - Hamduk Events & Rentals",
+    description: "High-quality equipment rentals for weddings, corporate events, and celebrations",
+    url: "https://eventz.hamduk.com.ng/rentals",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 // Initial rental items data
 const initialRentalItems = [

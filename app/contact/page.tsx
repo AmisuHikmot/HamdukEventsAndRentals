@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { Metadata } from "next"
 
 import { useState } from "react"
 import { Clock, Mail, MapPin, Phone } from "lucide-react"
@@ -11,6 +12,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+export const metadata: Metadata = {
+  title: "Contact Us - Hamduk Events & Rentals",
+  description: "Get in touch with Hamduk Events & Rentals. Contact our team for custom inquiries, event consultations, and support.",
+  keywords: "contact us, get in touch, event inquiry, customer support, Lagos contact",
+  openGraph: {
+    title: "Contact Us - Hamduk Events & Rentals",
+    description: "Reach out to our team for your event needs",
+    url: "https://eventz.hamduk.com.ng/contact",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

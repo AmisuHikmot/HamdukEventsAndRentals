@@ -1,125 +1,127 @@
-import { MetadataRoute } from 'next';
-import { supabase } from '@/lib/supabase';
+import { MetadataRoute } from 'next'
+import { supabase } from '@/lib/supabase'
 
-type ChangeFrequency = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+type ChangeFrequency = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
 
 interface SitemapEntry {
-  url: string;
-  lastModified: string;
-  changeFrequency: ChangeFrequency;
-  priority: number;
+  url: string
+  lastModified: string
+  changeFrequency: ChangeFrequency
+  priority: number
 }
 
-// Static pages configuration
+// Base URL for Hamduk Events & Rentals
+const baseUrl = 'https://eventz.hamduk.com.ng'
+
+// Static pages configuration with full URLs
 const staticPages: SitemapEntry[] = [
   {
-    url: '',
+    url: baseUrl,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'daily',
     priority: 1.0,
   },
   {
-    url: '/about',
+    url: `${baseUrl}/about`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'monthly',
     priority: 0.8,
   },
   {
-    url: '/services',
+    url: `${baseUrl}/services`,
+    lastModified: new Date().toISOString().split('T')[0],
+    changeFrequency: 'weekly',
+    priority: 0.95,
+  },
+  {
+    url: `${baseUrl}/services/event-planning`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
     priority: 0.9,
   },
   {
-    url: '/services/event-planning',
+    url: `${baseUrl}/services/equipment-rentals`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.85,
+    priority: 0.9,
   },
   {
-    url: '/services/equipment-rentals',
+    url: `${baseUrl}/services/staffing`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.85,
+    priority: 0.9,
   },
   {
-    url: '/services/staffing',
+    url: `${baseUrl}/services/decor`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.85,
+    priority: 0.9,
   },
   {
-    url: '/services/decor',
+    url: `${baseUrl}/services/catering`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.85,
+    priority: 0.9,
   },
   {
-    url: '/services/catering',
-    lastModified: new Date().toISOString().split('T')[0],
-    changeFrequency: 'weekly',
-    priority: 0.85,
-  },
-  {
-    url: '/rentals',
+    url: `${baseUrl}/rentals`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'daily',
-    priority: 0.9,
+    priority: 0.95,
   },
   {
-    url: '/gallery',
+    url: `${baseUrl}/gallery`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.7,
+    priority: 0.8,
   },
   {
-    url: '/blog',
+    url: `${baseUrl}/blog`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'weekly',
-    priority: 0.85,
+    priority: 0.8,
   },
   {
-    url: '/blog/10-essential-tips-for-planning-your-dream-wedding',
+    url: `${baseUrl}/blog/10-essential-tips-for-planning-your-dream-wedding`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'monthly',
     priority: 0.75,
   },
   {
-    url: '/booking',
+    url: `${baseUrl}/booking`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'daily',
     priority: 0.9,
   },
   {
-    url: '/contact',
+    url: `${baseUrl}/contact`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'monthly',
-    priority: 0.8,
+    priority: 0.85,
   },
   {
-    url: '/faq',
+    url: `${baseUrl}/faq`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'monthly',
     priority: 0.7,
   },
   {
-    url: '/privacy',
+    url: `${baseUrl}/privacy`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'yearly',
     priority: 0.5,
   },
   {
-    url: '/terms',
+    url: `${baseUrl}/terms`,
     lastModified: new Date().toISOString().split('T')[0],
     changeFrequency: 'yearly',
     priority: 0.5,
   },
-];
+]
 
 // Fetch dynamic routes from Supabase
 async function getDynamicRoutes(): Promise<SitemapEntry[]> {
-  const dynamicRoutes: SitemapEntry[] = [];
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eventz.hamduk.com.ng';
+  const dynamicRoutes: SitemapEntry[] = []
 
   try {
     // Fetch blog posts if available
@@ -127,20 +129,20 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
       const { data: blogPosts, error: blogError } = await supabase
         .from('blog_posts')
         .select('id, slug, updated_at')
-        .eq('published', true);
+        .eq('published', true)
 
       if (!blogError && blogPosts) {
         blogPosts.forEach((post) => {
           dynamicRoutes.push({
-            url: `/blog/${post.slug}`,
+            url: `${baseUrl}/blog/${post.slug}`,
             lastModified: new Date(post.updated_at).toISOString().split('T')[0],
             changeFrequency: 'monthly',
             priority: 0.75,
-          });
-        });
+          })
+        })
       }
     } catch (error) {
-      console.error(' Error fetching blog posts:', error);
+      console.error('[v0] Error fetching blog posts:', error)
     }
 
     // Fetch rental items if available
@@ -148,20 +150,20 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
       const { data: rentals, error: rentalError } = await supabase
         .from('rental_items')
         .select('id, slug, updated_at')
-        .eq('active', true);
+        .eq('active', true)
 
       if (!rentalError && rentals) {
         rentals.forEach((rental) => {
           dynamicRoutes.push({
-            url: `/rentals/${rental.slug}`,
+            url: `${baseUrl}/rentals/${rental.slug}`,
             lastModified: new Date(rental.updated_at).toISOString().split('T')[0],
             changeFrequency: 'weekly',
             priority: 0.8,
-          });
-        });
+          })
+        })
       }
     } catch (error) {
-      console.error(' Error fetching rental items:', error);
+      console.error('[v0] Error fetching rental items:', error)
     }
 
     // Fetch gallery images if available
@@ -170,41 +172,40 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
         .from('gallery_images')
         .select('id, event_id, created_at')
         .eq('published', true)
-        .limit(100);
+        .limit(100)
 
       if (!galleryError && galleryImages) {
-        const uniqueEvents = [...new Set(galleryImages.map((img) => img.event_id))];
+        const uniqueEvents = [...new Set(galleryImages.map((img) => img.event_id))]
         uniqueEvents.forEach((eventId) => {
           dynamicRoutes.push({
-            url: `/gallery/${eventId}`,
+            url: `${baseUrl}/gallery/${eventId}`,
             lastModified: new Date().toISOString().split('T')[0],
             changeFrequency: 'monthly',
             priority: 0.6,
-          });
-        });
+          })
+        })
       }
     } catch (error) {
-      console.error(' Error fetching gallery images:', error);
+      console.error('[v0] Error fetching gallery images:', error)
     }
   } catch (error) {
-    console.error(' Error fetching dynamic routes:', error);
+    console.error('[v0] Error fetching dynamic routes:', error)
   }
 
-  return dynamicRoutes;
+  return dynamicRoutes
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eventz.hamduk.com.ng/';
-  const dynamicRoutes = await getDynamicRoutes();
+  const dynamicRoutes = await getDynamicRoutes()
 
   // Combine static and dynamic routes
-  const allRoutes = [...staticPages, ...dynamicRoutes];
+  const allRoutes = [...staticPages, ...dynamicRoutes]
 
-  // Transform to MetadataRoute format
+  // Transform to MetadataRoute format (remove baseUrl since it's already included)
   return allRoutes.map((route) => ({
-    url: `${baseUrl}${route.url}`,
+    url: route.url,
     lastModified: route.lastModified,
-    changeFrequency: route.changeFrequency,
+    changeFrequency: route.changeFrequency as any,
     priority: route.priority,
-  }));
+  }))
 }

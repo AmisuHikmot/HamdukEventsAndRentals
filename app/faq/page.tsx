@@ -1,8 +1,22 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { generateFAQSchema, createJsonLdScript } from "@/lib/jsonld"
+
+export const metadata: Metadata = {
+  title: "Frequently Asked Questions - Hamduk Events & Rentals",
+  description: "Find answers to common questions about our event planning services, equipment rentals, booking process, and policies.",
+  keywords: "FAQ, frequently asked questions, event planning questions, rental questions, booking help",
+  openGraph: {
+    title: "Frequently Asked Questions - Hamduk Events & Rentals",
+    description: "Get answers to your questions about our services and policies",
+    url: "https://eventz.hamduk.com.ng/faq",
+    siteName: "Hamduk Events & Rentals",
+    type: "website",
+  },
+}
 
 const faqs = [
   {

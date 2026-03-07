@@ -11,6 +11,7 @@ import { Analytics } from "@/components/analytics"
 import { Toaster } from "@/components/ui/sonner"
 import { Suspense } from "react"
 import { generateOrganizationSchema, createJsonLdScript } from "@/lib/jsonld"
+import { generateSiteNavigationSchema } from "@/lib/navigation"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -80,6 +81,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const organizationSchema = generateOrganizationSchema()
+  const navigationSchema = generateSiteNavigationSchema(
+    process.env.NEXT_PUBLIC_BASE_URL || "https://eventz.hamduk.com.ng/"
+  )
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -87,6 +91,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: createJsonLdScript(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: createJsonLdScript(navigationSchema) }}
         />
       </head>
       <body className={inter.className}>
